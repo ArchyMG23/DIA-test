@@ -1,9 +1,9 @@
 services:
   - type: web
     name: dia-schreiben-trainer
-    env: static
-    buildCommand: npm run build
-    staticPublishPath: ./dist
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: GEMINI_API_KEY
         sync: false
