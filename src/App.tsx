@@ -41,6 +41,9 @@ export default function App() {
   const handleUpload = async (fileData: string, mimeType: string) => {
     setIsExtracting(true);
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("La clé API Gemini (GEMINI_API_KEY) est manquante. Veuillez l'ajouter dans les variables d'environnement sur Render et relancer le déploiement.");
+      }
       const extracted = await extractExercises(fileData, mimeType);
       setExercises(prev => {
         // Avoid duplicates by ID if necessary, but here we just prepend
@@ -49,10 +52,12 @@ export default function App() {
       setIsUploading(false);
       if (extracted.length > 0) {
         setSelectedId(extracted[0].id);
+      } else {
+        alert("Aucun exercice n'a été trouvé dans ce document.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Erreur lors de l'extraction des exercices.");
+      alert(`Erreur lors de l'extraction: ${error.message || "Erreur inconnue"}`);
     } finally {
       setIsExtracting(false);
     }
@@ -71,14 +76,17 @@ export default function App() {
     
     setIsEvaluating(true);
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("La clé API Gemini (GEMINI_API_KEY) est manquante.");
+      }
       const result = await evaluateWriting(exercise, text);
       setProgress(prev => ({
         ...prev,
         [id]: { text, evaluation: result }
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Erreur lors de l'évaluation.");
+      alert(`Erreur lors de l'évaluation: ${error.message || "Erreur inconnue"}`);
     } finally {
       setIsEvaluating(false);
     }
