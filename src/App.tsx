@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { UploadSection } from './components/UploadSection';
 import { TrainingInterface } from './components/TrainingInterface';
+import { InstallPWA } from './components/InstallPWA';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
 import { Plus, CheckCircle, Clock, WifiOff } from 'lucide-react';
 
@@ -123,7 +124,7 @@ export default function App() {
         {/* Sidebar */}
         <div className="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900/50 shrink-0">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA Schreiben</h1>
+            <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA SCHREIBEN</h1>
             <button
               onClick={() => { setIsUploading(true); setSelectedId(null); }}
               disabled={!isOnline}
@@ -133,6 +134,7 @@ export default function App() {
               <Plus className="w-4 h-4" />
               Ajouter un sujet
             </button>
+            <InstallPWA />
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {exercises.map(ex => {

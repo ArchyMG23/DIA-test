@@ -12,6 +12,7 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'auto',
         manifest: {
           name: 'DIA SCHREIBEN',
           short_name: 'DIA SCHREIBEN',
@@ -19,11 +20,23 @@ export default defineConfig(({mode}) => {
           theme_color: '#FF0000',
           background_color: '#ffffff',
           display: 'standalone',
+          start_url: '/',
           icons: [
             {
               src: '/icon.svg',
-              sizes: '192x192 512x512',
+              sizes: '192x192',
               type: 'image/svg+xml'
+            },
+            {
+              src: '/icon.svg',
+              sizes: '512x512',
+              type: 'image/svg+xml'
+            },
+            {
+              src: '/icon.svg',
+              sizes: '512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
             }
           ]
         },
