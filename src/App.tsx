@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { UploadSection } from './components/UploadSection';
 import { TrainingInterface } from './components/TrainingInterface';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
-import { Plus, CheckCircle, Clock } from 'lucide-react';
+import { Plus, CheckCircle, Clock, WifiOff } from 'lucide-react';
 
 interface SavedProgress {
   text: string;
@@ -29,6 +29,20 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(exercises.length === 0);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('dia_exercises', JSON.stringify(exercises));
@@ -96,66 +110,79 @@ export default function App() {
   const currentProgress = selectedId ? progress[selectedId] : null;
 
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900/50 shrink-0">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA Schreiben</h1>
-          <button
-            onClick={() => { setIsUploading(true); setSelectedId(null); }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Ajouter un sujet
-          </button>
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans overflow-hidden">
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div className="bg-orange-500 text-white px-4 py-2 text-sm font-medium flex items-center justify-center gap-2 shrink-0">
+          <WifiOff className="w-4 h-4" />
+          Mode hors-ligne actif. Vous pouvez continuer à écrire, mais l'extraction et l'évaluation nécessitent une connexion.
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {exercises.map(ex => {
-            const prog = progress[ex.id];
-            const isDone = !!prog?.evaluation;
-            const hasStarted = !!prog?.text;
-            
-            return (
-              <button
-                key={ex.id}
-                onClick={() => { setSelectedId(ex.id); setIsUploading(false); }}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === ex.id && !isUploading ? 'bg-white dark:bg-gray-800 border-[#FF0000] shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-200/50 dark:hover:bg-gray-800/50'}`}
-              >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold truncate text-sm">{ex.title}</h3>
-                  {isDone ? (
-                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                  ) : hasStarted ? (
-                    <Clock className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                  ) : null}
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{ex.type}</p>
-              </button>
-            );
-          })}
-          {exercises.length === 0 && (
-            <p className="text-sm text-gray-500 text-center mt-10">Aucun exercice sauvegardé.</p>
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900/50 shrink-0">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+            <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA Schreiben</h1>
+            <button
+              onClick={() => { setIsUploading(true); setSelectedId(null); }}
+              disabled={!isOnline}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              title={!isOnline ? "Connexion internet requise" : ""}
+            >
+              <Plus className="w-4 h-4" />
+              Ajouter un sujet
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {exercises.map(ex => {
+              const prog = progress[ex.id];
+              const isDone = !!prog?.evaluation;
+              const hasStarted = !!prog?.text;
+              
+              return (
+                <button
+                  key={ex.id}
+                  onClick={() => { setSelectedId(ex.id); setIsUploading(false); }}
+                  className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === ex.id && !isUploading ? 'bg-white dark:bg-gray-800 border-[#FF0000] shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-200/50 dark:hover:bg-gray-800/50'}`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-semibold truncate text-sm">{ex.title}</h3>
+                    {isDone ? (
+                      <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                    ) : hasStarted ? (
+                      <Clock className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{ex.type}</p>
+                </button>
+              );
+            })}
+            {exercises.length === 0 && (
+              <p className="text-sm text-gray-500 text-center mt-10">Aucun exercice sauvegardé.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          {isUploading || !selectedExercise ? (
+            <div className="flex-1 overflow-y-auto flex items-center justify-center">
+              <UploadSection onUpload={handleUpload} isExtracting={isExtracting} isOnline={isOnline} />
+            </div>
+          ) : (
+            <TrainingInterface
+              key={selectedExercise.id}
+              exercise={selectedExercise}
+              initialText={currentProgress?.text || ''}
+              evaluation={currentProgress?.evaluation || null}
+              onTextChange={(text) => handleTextChange(selectedExercise.id, text)}
+              onEvaluate={(text) => handleEvaluate(selectedExercise.id, text)}
+              isEvaluating={isEvaluating}
+              isOnline={isOnline}
+            />
           )}
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {isUploading || !selectedExercise ? (
-          <div className="flex-1 overflow-y-auto flex items-center justify-center">
-            <UploadSection onUpload={handleUpload} isExtracting={isExtracting} />
-          </div>
-        ) : (
-          <TrainingInterface
-            key={selectedExercise.id}
-            exercise={selectedExercise}
-            initialText={currentProgress?.text || ''}
-            evaluation={currentProgress?.evaluation || null}
-            onTextChange={(text) => handleTextChange(selectedExercise.id, text)}
-            onEvaluate={(text) => handleEvaluate(selectedExercise.id, text)}
-            isEvaluating={isEvaluating}
-          />
-        )}
       </div>
     </div>
   );

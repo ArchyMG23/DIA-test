@@ -12,9 +12,10 @@ interface TrainingInterfaceProps {
   onTextChange: (text: string) => void;
   onEvaluate: (text: string) => void;
   isEvaluating: boolean;
+  isOnline: boolean;
 }
 
-export function TrainingInterface({ exercise, initialText, evaluation, onTextChange, onEvaluate, isEvaluating }: TrainingInterfaceProps) {
+export function TrainingInterface({ exercise, initialText, evaluation, onTextChange, onEvaluate, isEvaluating, isOnline }: TrainingInterfaceProps) {
   const [text, setText] = useState(initialText);
   const [activeTab, setActiveTab] = useState<'write' | 'eval'>(evaluation ? 'eval' : 'write');
   const { minutes, seconds, isActive, isWarning, isFinished, start, pause, reset } = useTimer(30);
@@ -41,6 +42,7 @@ export function TrainingInterface({ exercise, initialText, evaluation, onTextCha
   }, [evaluation, pause]);
 
   const handleEvaluate = () => {
+    if (!isOnline) return;
     pause();
     onEvaluate(text);
   };
@@ -91,8 +93,9 @@ export function TrainingInterface({ exercise, initialText, evaluation, onTextCha
 
           <button
             onClick={handleEvaluate}
-            disabled={text.trim().length === 0 || isEvaluating}
-            className="flex items-center gap-2 px-6 py-2 bg-[#FF0000] hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-[#FF0000] text-white font-medium rounded-lg transition-colors"
+            disabled={text.trim().length === 0 || isEvaluating || !isOnline}
+            title={!isOnline ? "Connexion internet requise pour évaluer" : ""}
+            className="flex items-center gap-2 px-6 py-2 bg-[#FF0000] hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-[#FF0000] disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
           >
             {isEvaluating ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
