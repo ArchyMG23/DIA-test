@@ -18,7 +18,25 @@ interface SavedProgress {
 export default function App() {
   const [exercises, setExercises] = useState<Exercise[]>(() => {
     const saved = localStorage.getItem('dia_exercises');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) return JSON.parse(saved);
+    
+    // Default exercises if none exist
+    return [
+      {
+        id: 'default-1',
+        title: 'Beschwerde: Sprachreise nach Berlin',
+        situation: 'Sie haben eine zweiwöchige Sprachreise nach Berlin gebucht. In der Anzeige stand: "Zentrale Unterkunft, kleine Gruppen (max. 8 Personen), erfahrene Lehrer". Vor Ort war die Unterkunft jedoch 45 Minuten vom Zentrum entfernt, die Gruppe bestand aus 15 Personen und der Lehrer war oft unpünktlich.',
+        content: 'Schreiben Sie eine Beschwerde an den Veranstalter "Global Languages". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens\n- Erwartungen vs. Realität (Unterkunft, Gruppengröße)\n- Kritik am Unterricht\n- Forderung (z.B. Teilrückzahlung)',
+        type: 'Beschwerde'
+      },
+      {
+        id: 'default-2',
+        title: 'Bitte um Informationen: Freiwilligenarbeit',
+        situation: 'Sie interessieren sich für ein Projekt zur Freiwilligenarbeit im Umweltschutz in den Alpen. Sie haben eine Anzeige im Internet gesehen, aber es fehlen wichtige Details.',
+        content: 'Schreiben Sie eine E-Mail an die Organisation "Alpen-Natur". Bitten Sie um Informationen zu folgenden Punkten:\n- Dauer des Projekts und tägliche Arbeitszeit\n- Unterkunft und Verpflegung\n- Voraussetzungen (Sprachkenntnisse, Erfahrung)\n- Kosten oder Aufwandsentschädigung',
+        type: 'Information'
+      }
+    ];
   });
   
   const [progress, setProgress] = useState<Record<string, SavedProgress>>(() => {
@@ -26,8 +44,13 @@ export default function App() {
     return saved ? JSON.parse(saved) : {};
   });
   
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(exercises.length === 0);
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    const saved = localStorage.getItem('dia_exercises');
+    const ex = saved ? JSON.parse(saved) : null;
+    if (ex && ex.length > 0) return ex[0].id;
+    return 'default-1'; // Default if no saved exercises
+  });
+  const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -125,6 +148,21 @@ export default function App() {
         <div className="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900/50 shrink-0">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA SCHREIBEN</h1>
+            
+            {!process.env.GEMINI_API_KEY ? (
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-700 dark:text-red-400">
+                <div className="font-bold mb-1 flex items-center gap-1">
+                  <WifiOff className="w-3 h-3" /> Clé API manquante
+                </div>
+                L'IA ne fonctionnera pas. Ajoutez <strong>GEMINI_API_KEY</strong> dans les variables d'environnement sur Render.
+              </div>
+            ) : (
+              <div className="mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-lg text-[10px] text-green-600 dark:text-green-400 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                IA Connectée (Gemini 3.1 Pro)
+              </div>
+            )}
+
             <button
               onClick={() => { setIsUploading(true); setSelectedId(null); }}
               disabled={!isOnline}

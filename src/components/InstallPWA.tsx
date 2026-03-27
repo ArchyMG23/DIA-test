@@ -30,7 +30,16 @@ export function InstallPWA() {
     });
   };
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
   if (!supportsPWA) {
+    if (isIOS) {
+      return (
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-lg text-[10px] text-blue-600 dark:text-blue-400">
+          <strong>iOS:</strong> Pour installer l'app, appuyez sur <span className="font-bold">Partager</span> puis <span className="font-bold">Sur l'écran d'accueil</span>.
+        </div>
+      );
+    }
     return null;
   }
 

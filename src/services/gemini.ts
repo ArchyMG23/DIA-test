@@ -98,32 +98,61 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
     3. Structure de la lettre (Aufbau)
     4. Connecteurs logiques (Verknüpfungsmittel)
     5. Feedback global et note estimée (ex: "Bon travail, niveau B2 atteint").
+
+    IMPORTANT: Retourne UNIQUEMENT un objet JSON valide correspondant au schéma demandé.
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.1-pro-preview',
-    contents: prompt,
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER, description: "Note estimée sur 100" },
-          grammar: { type: Type.STRING, description: "Feedback sur la grammaire" },
-          vocabulary: { type: Type.STRING, description: "Feedback sur le vocabulaire B2" },
-          structure: { type: Type.STRING, description: "Feedback sur la structure" },
-          connectors: { type: Type.STRING, description: "Feedback sur les connecteurs" },
-          overallFeedback: { type: Type.STRING, description: "Feedback global" },
-        },
-        required: ["score", "grammar", "vocabulary", "structure", "connectors", "overallFeedback"],
-      },
-    },
-  });
-
   try {
-    return JSON.parse(response.text || '{}');
-  } catch (e) {
-    console.error("Failed to parse evaluation", e);
-    throw new Error("Failed to evaluate");
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-pro-preview',
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.NUMBER, description: "Note estimée sur 100" },
+            grammar: { type: Type.STRING, description: "Feedback sur la grammaire" },
+            vocabulary: { type: Type.STRING, description: "Feedback sur le vocabulaire B2" },
+            structure: { type: Type.STRING, description: "Feedback sur la structure" },
+            connectors: { type: Type.STRING, description: "Feedback sur les connecteurs" },
+            overallFeedback: { type: Type.STRING, description: "Feedback global" },
+          },
+          required: ["score", "grammar", "vocabulary", "structure", "connectors", "overallFeedback"],
+        },
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error("Le modèle n'a renvoyé aucun contenu. Cela peut être dû à un filtre de sécurité ou à une erreur interne.");
+    }
+
+    try {
+      const result = JSON.parse(text);
+      // Ensure score is a number
+      if (typeof result.score === 'string') {
+        result.score = parseInt(result.score, 10) || 0;
+      }
+      return result;
+    } catch (parseError) {
+      console.error("JSON Parse Error. Raw text:", text);
+      throw new Error("Le format de la réponse de l'IA est invalide. Veuillez réessayer.");
+    }
+  } catch (e: any) {
+    console.error("Evaluation error details:", e);
+    
+    // Handle specific API errors
+    if (e.message?.includes("429") || e.message?.includes("quota")) {
+      throw new Error("Limite de requêtes atteinte (Quota exceeded). Veuillez réessayer dans une minute.");
+    }
+    if (e.message?.includes("API key not valid")) {
+      throw new Error("La clé API configurée est invalide. Vérifiez vos variables d'environnement.");
+    }
+    if (e.message?.includes("safety") || e.message?.includes("blocked")) {
+      throw new Error("Le contenu a été bloqué par les filtres de sécurité de l'IA. Essayez de reformuler votre texte.");
+    }
+    
+    throw new Error(e.message || "Erreur lors de la communication avec l'IA.");
   }
 }
