@@ -65,22 +65,36 @@ export default function App() {
 
   // Sync Auth & Profile
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      
+      // Cleanup previous profile listener
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       if (u) {
         const profileRef = doc(db, 'users', u.uid);
-        const unsubscribeProfile = onSnapshot(profileRef, (snap) => {
+        unsubscribeProfile = onSnapshot(profileRef, (snap) => {
           if (snap.exists()) {
             setUserProfile(snap.data());
           }
+        }, (err) => {
+          console.error("Profile sync error:", err);
+          handleFirestoreError(err, OperationType.GET, `users/${u.uid}`);
         });
-        return () => unsubscribeProfile();
       } else {
         setUserProfile(null);
       }
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, []);
 
   // Fetch Teachers

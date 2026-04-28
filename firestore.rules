@@ -99,7 +99,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow list: if isSignedIn(); // Allow listing teachers
+      allow list: if isSignedIn() && resource.data.role == 'teacher';
       allow get: if isSignedIn(); 
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) 

@@ -56,14 +56,17 @@ export async function testConnection() {
 
 export const loginWithGoogle = async () => {
   try {
+    console.log("Starting Google login popup...");
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
+    console.log("Login successful, user:", user.email);
     
     // Create/update user document
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
     
     if (!userDoc.exists()) {
+      console.log("Creating new user profile in Firestore...");
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email,
@@ -74,8 +77,13 @@ export const loginWithGoogle = async () => {
       });
     }
     return user;
-  } catch (error) {
-    console.error("Login failed", error);
+  } catch (error: any) {
+    if (error.code === 'auth/popup-closed-by-user') {
+      console.warn("User closed the login popup.");
+      return null;
+    }
+    console.error("Login failed unexpectedly:", error);
+    alert(`La connexion a échoué : ${error.message || "Erreur inconnue"}`);
     throw error;
   }
 };
