@@ -13,9 +13,13 @@ export interface Exercise {
 export interface Evaluation {
   score: number;
   grammar: string;
+  grammarScore: number;
   vocabulary: string;
+  vocabularyScore: number;
   structure: string;
+  structureScore: number;
   connectors: string;
+  connectorsScore: number;
   overallFeedback: string;
 }
 
@@ -93,11 +97,11 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
     """
     
     Fournis une évaluation détaillée et constructive en français, structurée selon les critères du Telc B2 :
-    1. Correction grammaticale (Grammatik)
-    2. Vocabulaire niveau B2 (Wortschatz)
-    3. Structure de la lettre (Aufbau)
-    4. Connecteurs logiques (Verknüpfungsmittel)
-    5. Feedback global et note estimée (ex: "Bon travail, niveau B2 atteint").
+    1. Grammaire (Grammatik): Précision et complexité (B2 attend une bonne maîtrise des structures complexes). Score /25.
+    2. Vocabulaire (Wortschatz): Variété et adéquation au thème (B2 attend un lexique riche et des expressions idiomatiques). Score /25.
+    3. Structure de la lettre (Aufbau): Respect des codes de la lettre (date, objet, salutations, conclusion). Score /25.
+    4. Connecteurs logiques (Verknüpfungsmittel): Fluidité et cohérence de l'argumentation. Score /25.
+    5. Feedback global et note finale sur 100.
 
     IMPORTANT: Retourne UNIQUEMENT un objet JSON valide correspondant au schéma demandé.
   `;
@@ -111,14 +115,21 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Note estimée sur 100" },
-            grammar: { type: Type.STRING, description: "Feedback sur la grammaire" },
-            vocabulary: { type: Type.STRING, description: "Feedback sur le vocabulaire B2" },
-            structure: { type: Type.STRING, description: "Feedback sur la structure" },
-            connectors: { type: Type.STRING, description: "Feedback sur les connecteurs" },
-            overallFeedback: { type: Type.STRING, description: "Feedback global" },
+            score: { type: Type.NUMBER, description: "Note globale sur 100" },
+            grammar: { type: Type.STRING, description: "Feedback détaillé grammaire" },
+            grammarScore: { type: Type.NUMBER, description: "Note grammaire /25" },
+            vocabulary: { type: Type.STRING, description: "Feedback détaillé vocabulaire" },
+            vocabularyScore: { type: Type.NUMBER, description: "Note vocabulaire /25" },
+            structure: { type: Type.STRING, description: "Feedback détaillé structure" },
+            structureScore: { type: Type.NUMBER, description: "Note structure /25" },
+            connectors: { type: Type.STRING, description: "Feedback détaillé connecteurs" },
+            connectorsScore: { type: Type.NUMBER, description: "Note connecteurs /25" },
+            overallFeedback: { type: Type.STRING, description: "Synthèse globale" },
           },
-          required: ["score", "grammar", "vocabulary", "structure", "connectors", "overallFeedback"],
+          required: [
+            "score", "grammar", "grammarScore", "vocabulary", "vocabularyScore", 
+            "structure", "structureScore", "connectors", "connectorsScore", "overallFeedback"
+          ],
         },
       },
     });

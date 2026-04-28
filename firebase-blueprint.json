@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "lastTeacherId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student submission for teacher correction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "exerciseId": { "type": "string" },
+        "exerciseTitle": { "type": "string" },
+        "text": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "corrected"] },
+        "correction": {
+          "type": "object",
+          "properties": {
+            "score": { "type": "number" },
+            "grammarScore": { "type": "number" },
+            "vocabularyScore": { "type": "number" },
+            "structureScore": { "type": "number" },
+            "connectorsScore": { "type": "number" },
+            "overallFeedback": { "type": "string" },
+            "highlightedText": { "type": "string" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "teacherId", "exerciseId", "text", "status"]
+    },
+    "Exercise": {
+      "title": "Exercise",
+      "description": "A writing exercise",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "situation": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "situation", "content", "type"]
+    },
+    "Progress": {
+      "title": "Progress",
+      "description": "User progress and evaluation for an exercise",
+      "type": "object",
+      "properties": {
+        "exerciseId": { "type": "string" },
+        "text": { "type": "string" },
+        "evaluation": {
+          "type": "object",
+          "properties": {
+            "score": { "type": "number" },
+            "grammar": { "type": "string" },
+            "vocabulary": { "type": "string" },
+            "structure": { "type": "string" },
+            "connectors": { "type": "string" },
+            "overallFeedback": { "type": "string" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["exerciseId", "text"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User documents"
+    },
+    "exercises/{exerciseId}": {
+      "schema": "Exercise",
+      "description": "Public exercises available to all users"
+    },
+    "users/{userId}/progress/{exerciseId}": {
+      "schema": "Progress",
+      "description": "User progress for specific exercises"
+    },
+    "submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Submissions for teacher feedback"
+    }
+  }
+}

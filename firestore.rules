@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid 
+        && data.email == request.auth.token.email
+        && data.keys().hasAll(['uid', 'email', 'role', 'createdAt'])
+        && data.keys().size() <= 7 // Allowing displayName, photoURL, lastTeacherId
+        && data.uid is string
+        && data.email is string
+        && data.role in ['student', 'teacher']
+        && data.createdAt == request.time;
+    }
+
+    function isValidSubmission(data) {
+      return data.keys().hasAll(['id', 'studentId', 'teacherId', 'exerciseId', 'exerciseTitle', 'text', 'status', 'createdAt', 'updatedAt'])
+        && data.studentId == request.auth.uid
+        && data.status == 'pending'
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && data.teacherId != get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('lastTeacherId', '')
+        && data.text.size() <= 10000;
+    }
+
+    function isValidExercise(data) {
+      return data.keys().hasAll(['id', 'title', 'situation', 'content', 'type', 'createdAt'])
+        && data.keys().size() == 6
+        && data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.situation is string && data.situation.size() <= 2000
+        && data.content is string && data.content.size() <= 5000
+        && data.type is string && data.type.size() <= 50
+        && data.createdAt == request.time;
+    }
+
+    function isValidProgress(data) {
+      return data.keys().hasAll(['exerciseId', 'text', 'updatedAt'])
+        && (data.keys().size() == 3 || (data.keys().size() == 4 && data.keys().hasAll(['evaluation'])))
+        && data.exerciseId is string && data.exerciseId.size() <= 128
+        && data.text is string && data.text.size() <= 10000
+        && data.updatedAt == request.time
+        && (!data.keys().hasAll(['evaluation']) || (
+          data.evaluation.score is number 
+          && data.evaluation.score >= 0 
+          && data.evaluation.score <= 100
+          && data.evaluation.grammar is string && data.evaluation.grammar.size() <= 2000
+          && data.evaluation.vocabulary is string && data.evaluation.vocabulary.size() <= 2000
+          && data.evaluation.structure is string && data.evaluation.structure.size() <= 2000
+          && data.evaluation.connectors is string && data.evaluation.connectors.size() <= 2000
+          && data.evaluation.overallFeedback is string && data.evaluation.overallFeedback.size() <= 2000
+        ));
+    }
+
+    // --- Match Rules ---
+
+    match /exercises/{exerciseId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidExercise(incoming()) && isValidId(exerciseId);
+    }
+
+    match /submissions/{submissionId} {
+      allow list: if isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid);
+      allow get: if isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid);
+      allow create: if isSignedIn() && isValidSubmission(incoming());
+      allow update: if isSignedIn() 
+        && resource.data.teacherId == request.auth.uid
+        && existing().status == 'pending'
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'correction', 'updatedAt'])
+        && incoming().status == 'corrected'
+        && incoming().updatedAt == request.time;
+    }
+
+    match /users/{userId} {
+      allow list: if isSignedIn(); // Allow listing teachers
+      allow get: if isSignedIn(); 
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) 
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && (incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastTeacherId', 'role']))
+        && isValidUser(incoming());
+
+      match /progress/{exerciseId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidProgress(incoming()) && isValidId(exerciseId);
+        allow update: if isOwner(userId) 
+          && incoming().exerciseId == existing().exerciseId
+          && isValidProgress(incoming())
+          && (
+            // Action: Update Text
+            (incoming().diff(existing()).affectedKeys().hasOnly(['text', 'updatedAt'])) ||
+            // Action: Add/Update Evaluation
+            (incoming().diff(existing()).affectedKeys().hasOnly(['evaluation', 'updatedAt'])) ||
+            // Action: Both
+            (incoming().diff(existing()).affectedKeys().hasOnly(['text', 'evaluation', 'updatedAt']))
+          );
+      }
+    }
+  }
+}
