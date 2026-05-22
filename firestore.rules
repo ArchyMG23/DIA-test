@@ -36,8 +36,7 @@ service cloud.firestore {
         && data.keys().size() <= 7 // Allowing displayName, photoURL, lastTeacherId
         && data.uid is string
         && data.email is string
-        && data.role in ['student', 'teacher']
-        && data.createdAt == request.time;
+        && data.role in ['student', 'teacher'];
     }
 
     function isValidSubmission(data) {
@@ -101,10 +100,11 @@ service cloud.firestore {
     match /users/{userId} {
       allow list: if isSignedIn() && resource.data.role == 'teacher';
       allow get: if isSignedIn(); 
-      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().createdAt == request.time;
       allow update: if isOwner(userId) 
         && incoming().uid == existing().uid
         && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
         && (incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastTeacherId', 'role']))
         && isValidUser(incoming());
 

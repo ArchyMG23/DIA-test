@@ -85,7 +85,7 @@ export function TeacherDashboard() {
                   <AlertCircle className="w-4 h-4 text-orange-500 shrink-0" />
                 )}
               </div>
-              <p className="text-[10px] text-gray-500">Étudiant: {sub.studentId.substring(0, 8)}...</p>
+              <p className="text-[10px] text-gray-500">Étudiant: {sub.studentId?.substring(0, 8) || "Inconnu"}...</p>
             </button>
           ))}
           {submissions.length === 0 && (

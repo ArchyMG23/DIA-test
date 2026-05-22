@@ -9,12 +9,11 @@ import { TrainingInterface } from './components/TrainingInterface';
 import { StudentDashboard } from './components/StudentDashboard';
 import { InstallPWA } from './components/InstallPWA';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
-import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail } from 'lucide-react';
+import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail, Users, GraduationCap, Menu, X } from 'lucide-react';
 import { auth, loginWithGoogle, logout, db, OperationType, handleFirestoreError, updateUserRole, loginWithEmail, signUpWithEmail } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy, where, deleteDoc } from 'firebase/firestore';
 import { TeacherDashboard } from './components/TeacherDashboard';
-import { Users, GraduationCap } from 'lucide-react';
 
 interface SavedProgress {
   text: string;
@@ -42,6 +41,69 @@ const DEFAULT_EXERCISES: Exercise[] = [
     situation: 'Sie haben im Internet eine Anzeige für ein dreimonatiges Praktikum im Bereich Marketing bei der Firma "Mediadesign" in Hamburg gefunden.',
     content: 'Schreiben Sie Ihre Bewerbung. Behandeln Sie folgende Punkte:\n- Grund für Ihre Bewerbung\n- Ihre bisherigen Erfahrungen and Sprachkenntnisse\n- Warum Sie für dieses Unternehmen arbeiten möchten\n- Fragen zum genauen Arbeitsbeginn',
     type: 'Bewerbung'
+  },
+  {
+    id: 'default-4',
+    title: 'Beschwerde: Mietwagen im Urlaub',
+    situation: 'Für Ihren einwöchigen Familienurlaub in Spanien haben Sie online bei "Rent-a-Car Premium" einen geräumigen SUV mit voll ausgestatteter Klimaanlage gebucht. Bei der Abholung am Flughafen erhielten Sie jedoch einen kleinen, dreitürigen Kleinwagen. Zudem funktionierte die Klimaanlage nicht, und der Kindersitz fehlte. Trotz mehrmaliger Bitten verweigerte der Kundenservice vor Ort jegliche Unterstützung oder einen Fahrzeugwechsel.',
+    content: 'Schreiben Sie eine Beschwerde an die Zentrale von "Rent-a-Car Premium". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens\n- Abweichungen zwischen Buchung und erhaltenem Fahrzeug\n- Mangelnde Ausstattung (Klimaanlage, Kindersitz) und die Folgen\n- Unkooperatives Verhalten des Kundenservices\n- Angemessene finanzielle Entschädigung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-5',
+    title: 'Beschwerde: Festival "Rock am See"',
+    situation: 'Sie haben für das zweitägige Musikfestival "Rock am See" teure VIP-Tickets erworben, die laut Veranstalter separaten Zugang, erstklassiges Catering, exklusiven VIP-Bereich nah an der Bühne und ein Treffen mit den Künstlern beinhalteten. Die Realität war enttäuschend: Es gab keinen VIP-Eingang, die Schlangen waren stundenlang, der VIP-Bereich war überfüllt und zwei Hauptbands traten ohne Ersatz nicht auf.',
+    content: 'Schreiben Sie eine Beschwerde an die Eventagentur "SummerVibes GmbH". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens\n- Fehlende vertraglich vereinbarte Leistungen (VIP-Vorteile)\n- Enttäuschung über das Catering und die Organisation\n- Ausfall der Künstler und unzureichende Kommunikation\n- Forderung auf Rückerstattung eines Teils des Ticketpreises',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-6',
+    title: 'Beschwerde: Online-Kauf eines Laptops',
+    situation: 'Sie haben online über das Portal "Refurbished-Tech" ein generalüberholtes Notebook der Premiumklasse bestellt. Laut Beschreibung sollte das Gerät im Zustand "Wie neu" sein und inklusive Originalladegerät und Schutzhülle geliefert werden. Das gelieferte Notebook hatte jedoch deutliche Kratzer auf dem Bildschirm, die Akkulaufzeit lag unter 30 Minuten und das Zubehör fehlte komplett.',
+    content: 'Schreiben Sie eine Beschwerde an "Refurbished-Tech Kundenservice". Behandeln Sie folgende Punkte:\n- Grund des Schreibens und Bestelldaten\n- Beschreibung der Mängel am Gerät\n- Fehlendes Zubehör (Ladegerät, Hülle)\n- Enttäuschung über die Qualitätsbeschreibung ("Wie neu")\n- Fristsetzung zur Nachbesserung, Umtausch oder Rückgabe des Geldes',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-7',
+    title: 'Bitte um Informationen: Intensivsprachkurs in Wien',
+    situation: 'Sie planen, im kommenden Herbst Ihre Deutschkenntnisse zu vertiefen und sich auf die C1-Prüfung vorzubereiten. Sie stoßen auf das Angebot des "Dialog-Instituts in Wien". Das Online-Angebot klingt vielversprechend, lässt aber wesentliche organisatorische Details offen.',
+    content: 'Schreiben Sie eine E-Mail an das "Dialog-Institut Wien". Bitten Sie um Informationen zu folgenden Punkten:\n- Genaue Unterrichtszeiten und Gruppengröße\n- Unterstützung bei der Wohnungssuche oder Unterkunftsmöglichkeiten\n- Spezifischer Ablauf der Vorbereitung auf die C1-Prüfung (Simulationsprüfungen)\n- Stornierungsbedingungen und Fristen bei Visumsproblemen',
+    type: 'Information'
+  },
+  {
+    id: 'default-8',
+    title: 'Bitte um Informationen: Auslandspraktikum in New York',
+    situation: 'Die Vermittlungsagentur "GlobalCareers" bietet sechsmonatige bezahlte Praktika im Bereich Event-Marketing und Kommunikation in New York an. Sie finden das Angebot äußerst attraktiv, benötigen jedoch klärende Details.',
+    content: 'Schreiben Sie eine Anfrage-E-Mail an "GlobalCareers". Fragen Sie nach:\n- Kriterien für die Auswahl der Bewerber und notwendige Englischzertifikate\n- Durchschnittliche Höhe des Stipendiums / der Vergütung\n- Unterstützung bei der Beantragung des J-1 Visums\n- Vermittlungsgebühren und zusätzliche Kosten (z.B. Krankenversicherung)',
+    type: 'Information'
+  },
+  {
+    id: 'default-9',
+    title: 'Bitte um Informationen: Messeteilnahme für Start-ups',
+    situation: 'Sie vertreten das junge Food-Startup "ChocoBio" und möchten Ihr Produkt auf der Leitmesse "EcoFood Expo" in Köln präsentieren. Auf der Website finden Sie zwar das Anmeldeformular, aber keine Detailinformationen für Erstaussteller.',
+    content: 'Schreiben Sie eine E-Mail an das Messeteam der "EcoFood Expo". Klären Sie folgende Punkte:\n- Kosten pro Quadratmeter für einen kleinen Ausstellungsstand\n- Möglichkeit der Beteiligung an der Startup-Area (Sonderkonditionen)\n- Zur Verfügung gestellte technische Ausstattung (Strom, Kühlgeräte)\n- Werbemöglichkeiten im offiziellen Messekatalog und auf der Website',
+    type: 'Information'
+  },
+  {
+    id: 'default-10',
+    title: 'Bewerbung: Mitarbeiter an der Hotelrezeption',
+    situation: 'Das Grand Hotel "Vier Jahreszeiten" in München sucht für die Sommersaison eine Aushilfe (m/w/d) an der Rezeption und für die Gästebetreuung. Vorausgesetzt werden verhandlungssichere Deutsch- und Englischkenntnisse sowie ein freundliches Auftreten.',
+    content: 'Schreiben Sie Ihr Bewerbungsschreiben. Gehen Sie auf folgende Punkte ein:\n- Grund für Ihre Bewerbung und Bezugnahme auf die Stellenanzeige\n- Ihre Sprachkenntnisse und Ausbildung\n- Bisherige Kundenservice- oder Gastronomieerfahrungen\n- Motivation, für dieses renommierte Hotel zu arbeiten\n- Ihre zeitliche Verfügbarkeit im Sommer',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-11',
+    title: 'Bewerbung: Duales Studium "Tourismusmanagement"',
+    situation: 'Sie interessieren sich für ein dreijähriges duales Studium im Bereich Tourismusmanagement mit einem Mix aus Theoriezeiten an der Hochschule und Praxisphasen bei der "Rheinland Reise Gruppe GmbH". Diese vergibt für das nächste Studienjahr zwei begehrte Plätze.',
+    content: 'Schreiben Sie Ihre Bewerbung für das Duale Studium an die Personalabteilung der "Rheinland Reise Gruppe". Behandeln Sie folgende Punkte:\n- Warum Sie sich für den Studiengang Tourismusmanagement entschieden haben\n- Ihre schulischen Leistungen und relevanten Sprachkenntnisse (Deutsch, Englisch)\n- Erste Erfahrungen im Tourismus- oder Servicebereich\n- Warum Sie die Rheinland Reise Gruppe als Praxispartner wählen\n- Ihre Erwartungen an das duale System',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-12',
+    title: 'Bewerbung: Aushilfe in einer Buchhandlung',
+    situation: 'Die traditionsreiche Buchhandlung "Buch & Kaffee" in Frankfurt sucht ab sofort eine studentische Aushilfe (m/w/d) für die Wochenenden (Samstage) zur Betreuung der Kunden und zur Pflege der Buchbestände.',
+    content: 'Schreiben Sie Ihre Bewerbung an den Inhaber Herrn Peters. Behandeln Sie folgende Punkte:\n- Warum Sie in einer Buchhandlung arbeiten möchten\n- Ihre persönliche Lese-Affinität und Lieblingsgenres\n- Ihre Erfahrungen im Umgang mit Kunden (Freundlichkeit, Service)\n- Ihre Zuverlässigkeit und zeitliche Flexibilität am Samstag\n- Ihr gewünschter Arbeitsbeginn',
+    type: 'Bewerbung'
   }
 ];
 
@@ -63,6 +125,7 @@ export default function App() {
   });
   
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Email login/signup states
   const [email, setEmail] = useState('');
@@ -124,9 +187,35 @@ export default function App() {
 
       if (u) {
         const profileRef = doc(db, 'users', u.uid);
-        unsubscribeProfile = onSnapshot(profileRef, (snap) => {
+        unsubscribeProfile = onSnapshot(profileRef, async (snap) => {
           if (snap.exists()) {
             setUserProfile(snap.data());
+          } else {
+            console.log("No profile found in Firestore for uid:", u.uid, ". Initializing fallback...");
+            const fallbackProfile = {
+              uid: u.uid,
+              email: u.email || '',
+              displayName: u.displayName || '',
+              photoURL: u.photoURL || null,
+              role: 'student' as const,
+              createdAt: new Date()
+            };
+            setUserProfile(fallbackProfile);
+            
+            // Background self-healing creation of missing profile document
+            try {
+              await setDoc(profileRef, {
+                uid: u.uid,
+                email: u.email || '',
+                displayName: u.displayName || '',
+                photoURL: u.photoURL || null,
+                role: 'student',
+                createdAt: serverTimestamp()
+              }, { merge: true });
+              console.log("Automatically created missing profile in Firestore.");
+            } catch (createErr) {
+              console.warn("Could not auto-create user profile document in Firestore:", createErr);
+            }
           }
         }, (err) => {
           console.error("Profile sync error:", err);
@@ -255,6 +344,7 @@ export default function App() {
     }
     setSelectedId(id);
     setIsUploading(false);
+    setIsSidebarOpen(false);
   };
 
   const [isUploading, setIsUploading] = useState(false);
@@ -283,6 +373,39 @@ export default function App() {
     localStorage.setItem('dia_progress', JSON.stringify(progress));
   }, [progress]);
 
+  // Synchronise local custom exercises to Firestore upon login
+  useEffect(() => {
+    if (!user) return;
+    
+    const syncLocalExercises = async () => {
+      const customLocalExercises = exercises.filter(ex => !ex.id.startsWith('default-'));
+      for (const ex of customLocalExercises) {
+        // Sanitize first to protect against ID/keys firestore rules
+        const cleanId = ex.id.replace(new RegExp("[^a-zA-Z0-9_\\-]", "g"), '_').substring(0, 100) || `ex_${Date.now()}`;
+        try {
+          const exRef = doc(db, 'exercises', cleanId);
+          await setDoc(exRef, {
+            id: cleanId,
+            title: ex.title || 'Sujet sans titre',
+            situation: ex.situation || '',
+            content: ex.content || '',
+            type: ex.type || 'Beschwerde',
+            createdAt: serverTimestamp()
+          }, { merge: true });
+        } catch (err) {
+          console.warn("Silent sync error for exercise:", cleanId, err);
+        }
+      }
+    };
+
+    // Run sync after a brief delay to avoid race conditions
+    const timer = setTimeout(() => {
+      syncLocalExercises();
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [user, exercises]);
+
   const handleUpload = useCallback(async (fileData: string, mimeType: string) => {
     setIsExtracting(true);
     try {
@@ -291,23 +414,39 @@ export default function App() {
       }
       const extracted = await extractExercises(fileData, mimeType);
       
+      const sanitizedExtracted = extracted.map(ex => {
+        const cleanId = ex.id.replace(new RegExp("[^a-zA-Z0-9_\\-]", "g"), '_').substring(0, 100) || `ex_${Date.now()}`;
+        return {
+          id: cleanId,
+          title: ex.title || 'Sujet sans titre',
+          situation: ex.situation || '',
+          content: ex.content || '',
+          type: ex.type || 'Beschwerde'
+        };
+      });
+
       // Save to global exercises if logged in
       if (user) {
-        for (const ex of extracted) {
+        for (const ex of sanitizedExtracted) {
           const exRef = doc(db, 'exercises', ex.id);
           await setDoc(exRef, {
-            ...ex,
+            id: ex.id,
+            title: ex.title,
+            situation: ex.situation,
+            content: ex.content,
+            type: ex.type,
             createdAt: serverTimestamp()
           });
         }
       }
 
       setExercises(prev => {
-        return [...extracted, ...prev];
+        const filteredPrev = prev.filter(p => !sanitizedExtracted.some(s => s.id === p.id));
+        return [...sanitizedExtracted, ...filteredPrev];
       });
       setIsUploading(false);
-      if (extracted.length > 0) {
-        setSelectedId(extracted[0].id);
+      if (sanitizedExtracted.length > 0) {
+        setSelectedId(sanitizedExtracted[0].id);
       } else {
         alert("Aucun exercice n'a été trouvé dans ce document.");
       }
@@ -414,13 +553,43 @@ export default function App() {
         </div>
       )}
 
+      {/* Mobile Header Banner */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Ouvrir le menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <span className="font-bold text-sm tracking-widest text-[#FF0000]">DIA SCHREIBEN</span>
+        <div className="w-9" />
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar backdrop for mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <div className="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900/50 shrink-0">
+        <div className={`fixed inset-y-0 left-0 w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative md:flex transition-transform duration-300 ease-in-out shrink-0`}>
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <h1 className="text-xl font-bold tracking-tight mb-4 text-[#FF0000]">DIA SCHREIBEN</h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold tracking-tight text-[#FF0000]">DIA SCHREIBEN</h1>
+              <button 
+                onClick={() => setIsSidebarOpen(false)}
+                className="md:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Fermer le menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             
-            {/* User Session / Cloud Sync */}
+            {/* User Session and Cloud Sync */}
             <div className="mb-6">
               {user ? (
                 <div className="p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -652,7 +821,12 @@ export default function App() {
                 <button
                   key={ex.id}
                   onClick={() => selectExercise(ex.id)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === ex.id && !isUploading ? 'bg-white dark:bg-gray-800 border-[#FF0000] shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-200/50 dark:hover:bg-gray-800/50'}`}
+                  className={
+                    "w-full text-left p-4 rounded-xl border transition-all " +
+                    (selectedId === ex.id && !isUploading
+                      ? 'bg-white dark:bg-gray-800 border-[#FF0000] shadow-sm'
+                      : 'bg-transparent border-transparent hover:bg-gray-200/50 dark:hover:bg-gray-800/50')
+                  }
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-semibold truncate text-sm">{ex.title}</h3>
