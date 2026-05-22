@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTimer } from '../hooks/useTimer';
 import { Exercise, Evaluation } from '../services/gemini';
-import { Play, Pause, RotateCcw, CheckCircle, PenTool, Award, Printer, UserCircle, Clock } from 'lucide-react';
+import { Play, Pause, RotateCcw, CheckCircle, PenTool, Award, Printer, UserCircle, Clock, ArrowLeft } from 'lucide-react';
 import { cn } from '../lib/utils';
 import Markdown from 'react-markdown';
 import { User } from 'firebase/auth';
@@ -20,11 +20,12 @@ interface TrainingInterfaceProps {
   teachers: any[];
   user: User | null;
   lastTeacherId?: string;
+  onExit: () => void;
 }
 
 export function TrainingInterface({ 
   exercise, initialText, evaluation, onTextChange, onEvaluate, isEvaluating, isOnline,
-  isTimerRunning, setIsTimerRunning, teachers, user, lastTeacherId
+  isTimerRunning, setIsTimerRunning, teachers, user, lastTeacherId, onExit
 }: TrainingInterfaceProps) {
   const [text, setText] = useState(initialText);
   const [activeTab, setActiveTab] = useState<'write' | 'eval'>(evaluation ? 'eval' : 'write');
@@ -106,6 +107,13 @@ export function TrainingInterface({
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-4">
+          <button 
+            onClick={onExit}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center"
+            title="Quitter et sauvegarder"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <h1 className="text-xl font-semibold truncate max-w-sm">{exercise.title}</h1>
           <span className="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 rounded-full">
             {exercise.type}

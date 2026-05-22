@@ -8,8 +8,8 @@ import { UploadSection } from './components/UploadSection';
 import { TrainingInterface } from './components/TrainingInterface';
 import { InstallPWA } from './components/InstallPWA';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
-import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon } from 'lucide-react';
-import { auth, loginWithGoogle, logout, db, OperationType, handleFirestoreError, updateUserRole } from './lib/firebase';
+import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail } from 'lucide-react';
+import { auth, loginWithGoogle, logout, db, OperationType, handleFirestoreError, updateUserRole, loginWithEmail, signUpWithEmail } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy, where, deleteDoc } from 'firebase/firestore';
 import { TeacherDashboard } from './components/TeacherDashboard';
@@ -63,6 +63,51 @@ export default function App() {
   
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
+  // Email login/signup states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [emailRole, setEmailRole] = useState<'student' | 'teacher'>('student');
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [teacherCode, setTeacherCode] = useState('');
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      alert("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+    if (isSignUp && !fullName) {
+      alert("Veuillez saisir votre nom complet.");
+      return;
+    }
+    if (isSignUp && emailRole === 'teacher' && teacherCode.trim().toUpperCase() !== 'B2PROF') {
+      alert("Le code d'accès enseignant est incorrect. Veuillez utiliser le bon code pour créer un compte Prof (Ex: B2PROF).");
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      if (isSignUp) {
+        await signUpWithEmail(email, password, fullName, emailRole);
+      } else {
+        await loginWithEmail(email, password);
+      }
+      // Reset form on success
+      setEmail('');
+      setPassword('');
+      setFullName('');
+      setTeacherCode('');
+      setShowEmailForm(false);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   // Sync Auth & Profile
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
@@ -111,8 +156,6 @@ export default function App() {
 
   // Sync exercises from global collection
   useEffect(() => {
-    if (!user) return; 
-
     const q = query(collection(db, 'exercises'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const cloudExercises: Exercise[] = [];
@@ -144,7 +187,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, []);
 
   // Sync progress from Firestore
   useEffect(() => {
@@ -174,19 +217,7 @@ export default function App() {
 
   const selectExercise = (id: string | null) => {
     if (isTimerRunning) {
-      if (confirm("Le temps est lancé. Si vous sortez de cet exercice maintenant, votre progression sera perdue. Voulez-vous continuer ?")) {
-        // Reset progress for this exercise if exiting during timer
-        if (selectedId) {
-          setProgress(prev => {
-            const next = { ...prev };
-            delete next[selectedId];
-            return next;
-          });
-          if (user) {
-            const progRef = doc(db, 'users', user.uid, 'progress', selectedId);
-             deleteDoc(progRef).catch(console.warn);
-          }
-        }
+      if (confirm("Le minuteur est en cours. Voulez-vous suspendre l'exercice et enregistrer votre brouillon pour continuer plus tard ?")) {
         setIsTimerRunning(false);
       } else {
         return;
@@ -381,7 +412,17 @@ export default function App() {
                       <Users className="w-3 h-3" /> Éléve
                     </button>
                     <button 
-                      onClick={() => user && updateUserRole(user.uid, 'teacher')}
+                      onClick={() => {
+                        if (user) {
+                          const code = prompt("Veuillez saisir le code d'accès enseignant pour changer votre rôle en 'Prof' :");
+                          if (code === null) return;
+                          if (code.trim().toUpperCase() === "B2PROF") {
+                            updateUserRole(user.uid, 'teacher');
+                          } else {
+                            alert("Code d'accès enseignant incorrect.");
+                          }
+                        }
+                      }}
                       className={`flex-1 py-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-colors ${userProfile?.role === 'teacher' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}
                     >
                       <GraduationCap className="w-3 h-3" /> Prof
@@ -396,16 +437,142 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={loginWithGoogle}
-                  className="w-full p-4 bg-[#FF0000] text-white rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95 flex flex-col items-center gap-2 group"
-                >
-                  <div className="flex items-center gap-2 font-bold">
-                    <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    Connectez-vous pour sauver
-                  </div>
-                  <p className="text-[10px] text-white/80 font-normal">Retrouvez votre progression partout.</p>
-                </button>
+                <div className="space-y-3">
+                  {!showEmailForm ? (
+                    <div className="space-y-2">
+                      <button
+                        onClick={loginWithGoogle}
+                        className="w-full p-4 bg-[#FF0000] text-white rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95 flex flex-col items-center gap-2 group"
+                      >
+                        <div className="flex items-center gap-2 font-bold">
+                          <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          Connexion avec Google
+                        </div>
+                        <p className="text-[10px] text-white/80 font-normal">Retrouvez votre progression partout.</p>
+                      </button>
+
+                      <button
+                        onClick={() => { setShowEmailForm(true); setIsSignUp(false); }}
+                        className="w-full py-3 px-4 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-gray-750 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Se connecter par Email
+                      </button>
+
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl text-[10px] text-amber-600 dark:text-amber-400 leading-normal">
+                        <strong>Problème de connexion ?</strong> Si la fenêtre Google ne s'ouvre pas ou se ferme, utilisez l'option <strong>par Email</strong> ci-dessus qui fonctionne directement sans fenêtre popup !
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleEmailAuth} className="space-y-2.5 p-3.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-left">
+                      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-1.5">
+                        <h3 className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                          {isSignUp ? "Créer un compte" : "Connexion Email"}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowEmailForm(false)}
+                          className="text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white underline font-medium"
+                        >
+                          Retour
+                        </button>
+                      </div>
+
+                      {isSignUp && (
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] uppercase font-bold text-gray-400 block">Nom complet</label>
+                          <input
+                            type="text"
+                            className="w-full text-xs p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-[#FF0000]"
+                            placeholder="Ex: Victor Y."
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                          />
+                        </div>
+                      )}
+
+                      <div className="space-y-0.5">
+                        <label className="text-[9px] uppercase font-bold text-gray-400 block">Email</label>
+                        <input
+                          type="email"
+                          className="w-full text-xs p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-[#FF0000]"
+                          placeholder="exemple@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <label className="text-[9px] uppercase font-bold text-gray-400 block">Mot de passe</label>
+                        <input
+                          type="password"
+                          className="w-full text-xs p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-[#FF0000]"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          minLength={6}
+                        />
+                      </div>
+
+                      {isSignUp && (
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-bold text-gray-400 block">Votre rôle</label>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEmailRole('student')}
+                              className={`flex-1 py-1 rounded text-[10px] font-bold border transition-colors ${emailRole === 'student' ? 'bg-[#FF0000] text-white border-transparent' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 border-gray-250 dark:border-transparent'}`}
+                            >
+                              Élève
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEmailRole('teacher')}
+                              className={`flex-1 py-1 rounded text-[10px] font-bold border transition-colors ${emailRole === 'teacher' ? 'bg-indigo-600 text-white border-transparent' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 border-gray-250 dark:border-transparent'}`}
+                            >
+                              Prof
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {isSignUp && emailRole === 'teacher' && (
+                        <div className="space-y-0.5 animate-fadeIn">
+                          <label className="text-[9px] uppercase font-bold text-amber-500 block">Code d'accès enseignant</label>
+                          <input
+                            type="text"
+                            className="w-full text-xs p-2 border border-amber-300 dark:border-amber-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-indigo-600 font-mono"
+                            placeholder="Entrez le code Prof (ex: B2PROF)"
+                            value={teacherCode}
+                            onChange={(e) => setTeacherCode(e.target.value)}
+                            required
+                          />
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        className="w-full py-2 px-3 bg-[#FF0000] text-white rounded-lg font-bold text-xs hover:bg-red-600 disabled:opacity-50 transition-colors shadow-sm shadow-red-500/10"
+                      >
+                        {authLoading ? "En cours..." : isSignUp ? "S'inscrire et se connecter" : "Se connecter"}
+                      </button>
+
+                      <div className="text-center pt-1 border-t border-gray-100 dark:border-gray-700/50">
+                        <button
+                          type="button"
+                          onClick={() => { setIsSignUp(!isSignUp); setPassword(''); }}
+                          className="text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white underline font-medium"
+                        >
+                          {isSignUp ? "Déjà membre ? Connectez-vous" : "Pas de compte ? Inscrivez-vous"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               )}
             </div>
 
@@ -494,6 +661,7 @@ export default function App() {
               teachers={teachers}
               user={user}
               lastTeacherId={userProfile?.lastTeacherId}
+              onExit={() => selectExercise(null)}
             />
           )}
         </div>

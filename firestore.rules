@@ -82,7 +82,7 @@ service cloud.firestore {
     // --- Match Rules ---
 
     match /exercises/{exerciseId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isSignedIn() && isValidExercise(incoming()) && isValidId(exerciseId);
     }
 

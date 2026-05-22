@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, serverTimestamp, updateDoc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Exercise, Evaluation } from '../services/gemini';
@@ -82,8 +82,50 @@ export const loginWithGoogle = async () => {
       console.warn("User closed the login popup.");
       return null;
     }
+    if (error.code === 'auth/unauthorized-domain') {
+      alert("Ce site web n'est pas encore enregistré dans l'onglet 'Domaines autorisés' de votre console Firebase Auth. Veuillez utiliser l'option de connexion 'par Email' ci-dessous, qui fonctionne partout sans restriction !");
+      return null;
+    }
     console.error("Login failed unexpectedly:", error);
     alert(`La connexion a échoué : ${error.message || "Erreur inconnue"}`);
+    throw error;
+  }
+};
+
+export const loginWithEmail = async (email: string, password: string) => {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error: any) {
+    console.error("Email login failed:", error);
+    alert(`La connexion par email a échoué : ${error.message || "Erreur"}`);
+    throw error;
+  }
+};
+
+export const signUpWithEmail = async (email: string, password: string, fullName: string, role: 'student' | 'teacher') => {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const user = result.user;
+    
+    // Update Auth Profile
+    await updateProfile(user, { displayName: fullName });
+    
+    // Create Firestore Document
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: fullName,
+      photoURL: null,
+      role: role,
+      createdAt: serverTimestamp()
+    });
+    
+    return user;
+  } catch (error: any) {
+    console.error("Email signup failed:", error);
+    alert(`L'inscription par email a échoué : ${error.message || "Erreur"}`);
     throw error;
   }
 };
