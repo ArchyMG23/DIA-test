@@ -726,7 +726,31 @@ export default function App() {
     }
   }, [exercises, user]);
 
-  const selectedExercise = exercises.find(e => e.id === selectedId);
+  const sortedExercises = useMemo(() => {
+    return [...exercises].sort((a, b) => {
+      const isDefaultA = a.id.startsWith('default-');
+      const isDefaultB = b.id.startsWith('default-');
+
+      if (isDefaultA && isDefaultB) {
+        const numA = parseInt(a.id.replace('default-', ''), 10);
+        const numB = parseInt(b.id.replace('default-', ''), 10);
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return numA - numB;
+        }
+        return a.id.localeCompare(b.id);
+      }
+      
+      if (isDefaultA && !isDefaultB) return -1;
+      if (!isDefaultA && isDefaultB) return 1;
+
+      // Custom ones: sort alphabetically by title, then clean ID
+      const titleCompare = (a.title || '').localeCompare(b.title || '');
+      if (titleCompare !== 0) return titleCompare;
+      return a.id.localeCompare(b.id);
+    });
+  }, [exercises]);
+
+  const selectedExercise = sortedExercises.find(e => e.id === selectedId);
   const currentProgress = selectedId ? progress[selectedId] : null;
 
   // Memoize handlers that depend on the selected exercise id to prevent infinite loops in TrainingInterface
@@ -1009,7 +1033,7 @@ export default function App() {
             <InstallPWA />
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {exercises.map(ex => {
+            {sortedExercises.map(ex => {
               const prog = progress[ex.id];
               const isDone = !!prog?.evaluation;
               const hasStarted = !!prog?.text;
@@ -1044,7 +1068,7 @@ export default function App() {
                 </button>
               );
             })}
-            {exercises.length === 0 && (
+            {sortedExercises.length === 0 && (
               <p className="text-sm text-gray-500 text-center mt-10">Aucun exercice sauvegardé.</p>
             )}
           </div>
@@ -1077,7 +1101,7 @@ export default function App() {
             />
           ) : (
             <StudentDashboard
-              exercises={exercises}
+              exercises={sortedExercises}
               progress={progress}
               user={user}
               userProfile={userProfile}
