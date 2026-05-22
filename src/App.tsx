@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { UploadSection } from './components/UploadSection';
 import { TrainingInterface } from './components/TrainingInterface';
+import { StudentDashboard } from './components/StudentDashboard';
 import { InstallPWA } from './components/InstallPWA';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
 import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail } from 'lucide-react';
@@ -215,7 +216,36 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const selectExercise = (id: string | null) => {
+  const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const pendingTextsRef = useRef<Record<string, string>>({});
+
+  const flushPendingSave = useCallback(async (id: string) => {
+    if (saveTimeoutRef.current[id]) {
+      clearTimeout(saveTimeoutRef.current[id]);
+      delete saveTimeoutRef.current[id];
+    }
+
+    const pendingText = pendingTextsRef.current[id];
+    if (pendingText !== undefined && user) {
+      try {
+        const progRef = doc(db, 'users', user.uid, 'progress', id);
+        await setDoc(progRef, {
+          exerciseId: id,
+          text: pendingText,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        delete pendingTextsRef.current[id];
+      } catch (e) {
+        console.warn("Error flushing save:", e);
+      }
+    }
+  }, [user]);
+
+  const selectExercise = async (id: string | null) => {
+    if (selectedId) {
+      await flushPendingSave(selectedId);
+    }
+
     if (isTimerRunning) {
       if (confirm("Le minuteur est en cours. Voulez-vous suspendre l'exercice et enregistrer votre brouillon pour continuer plus tard ?")) {
         setIsTimerRunning(false);
@@ -226,13 +256,6 @@ export default function App() {
     setSelectedId(id);
     setIsUploading(false);
   };
-
-  // Set initial selection once exercises are loaded
-  useEffect(() => {
-    if (exercises.length > 0 && !selectedId) {
-      setSelectedId(exercises[0].id);
-    }
-  }, [exercises, selectedId]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -296,7 +319,7 @@ export default function App() {
     }
   }, [user]);
 
-  const handleTextChange = useCallback(async (id: string, text: string) => {
+  const handleTextChange = useCallback((id: string, text: string) => {
     // Only update state immediately for smooth typing
     setProgress(prev => {
       if (prev[id]?.text === text) return prev;
@@ -306,18 +329,30 @@ export default function App() {
       };
     });
 
-    // Save to Firestore if logged in (debouncing would be better, but simple for now)
-    if (user && !id.startsWith('default-')) {
-       try {
-         const progRef = doc(db, 'users', user.uid, 'progress', id);
-         await setDoc(progRef, {
-           exerciseId: id,
-           text,
-           updatedAt: serverTimestamp()
-         }, { merge: true });
-       } catch (e) {
-         console.warn("Silent save error:", e);
-       }
+    // Save pending text reference
+    pendingTextsRef.current[id] = text;
+
+    // Clear previous timeout for this id
+    if (saveTimeoutRef.current[id]) {
+      clearTimeout(saveTimeoutRef.current[id]);
+    }
+
+    // Save to Firestore with a debounce delay if user is logged in
+    if (user) {
+      const timeout = setTimeout(async () => {
+        try {
+          const progRef = doc(db, 'users', user.uid, 'progress', id);
+          await setDoc(progRef, {
+            exerciseId: id,
+            text,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+          delete pendingTextsRef.current[id];
+        } catch (e) {
+          console.warn("Silent save error:", e);
+        }
+      }, 1500);
+      saveTimeoutRef.current[id] = timeout;
     }
   }, [user]);
 
@@ -333,12 +368,14 @@ export default function App() {
       const result = await evaluateWriting(exercise, text);
       
       // Save to Firestore if logged in
-      if (user && !id.startsWith('default-')) {
+      if (user) {
         const progRef = doc(db, 'users', user.uid, 'progress', id);
-        await updateDoc(progRef, {
+        await setDoc(progRef, {
+          exerciseId: id,
+          text,
           evaluation: result,
           updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
       }
 
       setProgress(prev => ({
@@ -404,29 +441,33 @@ export default function App() {
                   </div>
                   
                   {/* Role Switcher */}
-                  <div className="flex gap-2 mb-3">
-                    <button 
-                      onClick={() => user && updateUserRole(user.uid, 'student')}
-                      className={`flex-1 py-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-colors ${userProfile?.role === 'student' ? 'bg-[#FF0000] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}
-                    >
-                      <Users className="w-3 h-3" /> Éléve
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if (user) {
-                          const code = prompt("Veuillez saisir le code d'accès enseignant pour changer votre rôle en 'Prof' :");
-                          if (code === null) return;
-                          if (code.trim().toUpperCase() === "B2PROF") {
-                            updateUserRole(user.uid, 'teacher');
-                          } else {
-                            alert("Code d'accès enseignant incorrect.");
+                  <div className="mb-3">
+                    {userProfile?.role === 'teacher' ? (
+                      <button 
+                        onClick={() => user && updateUserRole(user.uid, 'student')}
+                        className="w-full py-1.5 px-3 rounded-lg text-[10px] font-bold bg-gray-100 dark:bg-gray-700 text-gray-750 hover:bg-[#FF0000] hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Users className="w-3.5 h-3.5" /> Basculer en vue Étudiant
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (user) {
+                            const code = prompt("Veuillez saisir le code d'accès enseignant pour activer le rôle de 'Prof' :");
+                            if (code === null) return;
+                            if (code.trim().toUpperCase() === "B2PROF") {
+                              updateUserRole(user.uid, 'teacher');
+                              alert("Rôle Enseignant activé !");
+                            } else {
+                              alert("Code d'accès enseignant incorrect.");
+                            }
                           }
-                        }
-                      }}
-                      className={`flex-1 py-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-colors ${userProfile?.role === 'teacher' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}
-                    >
-                      <GraduationCap className="w-3 h-3" /> Prof
-                    </button>
+                        }}
+                        className="w-full py-1 px-2 text-[9px] font-medium text-gray-400 hover:text-[#FF0000] hover:underline transition-all text-center"
+                      >
+                        ⚠️ Déverrouiller l'accès Enseignant
+                      </button>
+                    )}
                   </div>
 
                   <button 
@@ -642,11 +683,11 @@ export default function App() {
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           {userProfile?.role === 'teacher' ? (
             <TeacherDashboard />
-          ) : isUploading || !selectedExercise ? (
+          ) : isUploading ? (
             <div className="flex-1 overflow-y-auto flex items-center justify-center">
               <UploadSection onUpload={handleUpload} isExtracting={isExtracting} isOnline={isOnline} />
             </div>
-          ) : (
+          ) : selectedExercise ? (
             <TrainingInterface
               key={selectedExercise.id}
               exercise={selectedExercise}
@@ -662,6 +703,15 @@ export default function App() {
               user={user}
               lastTeacherId={userProfile?.lastTeacherId}
               onExit={() => selectExercise(null)}
+            />
+          ) : (
+            <StudentDashboard
+              exercises={exercises}
+              progress={progress}
+              user={user}
+              userProfile={userProfile}
+              onSelectExercise={(id) => selectExercise(id)}
+              onStartUpload={() => { setIsUploading(true); setSelectedId(null); }}
             />
           )}
         </div>

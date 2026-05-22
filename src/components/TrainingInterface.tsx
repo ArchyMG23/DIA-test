@@ -29,7 +29,10 @@ export function TrainingInterface({
 }: TrainingInterfaceProps) {
   const [text, setText] = useState(initialText);
   const [activeTab, setActiveTab] = useState<'write' | 'eval'>(evaluation ? 'eval' : 'write');
+  const [isRedactionFinished, setIsRedactionFinished] = useState(false);
   const { minutes, seconds, isActive, isWarning, isFinished, start, pause, reset } = useTimer(30);
+
+  const hasEndedRedaction = isFinished || isRedactionFinished || !!evaluation;
 
   // Sync timer state with parent
   useEffect(() => {
@@ -53,6 +56,11 @@ export function TrainingInterface({
     if (!isOnline) return;
     pause();
     onEvaluate(text);
+  };
+
+  const handleReset = () => {
+    reset();
+    setIsRedactionFinished(false);
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,18 +146,33 @@ export function TrainingInterface({
                     <Pause className="w-5 h-5" />
                   </button>
                 ) : (
-                  <button onClick={start} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Débuter" disabled={isFinished}>
+                  <button onClick={start} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Débuter" disabled={hasEndedRedaction}>
                     <Play className="w-5 h-5 text-green-500" />
                   </button>
                 )}
-                <button onClick={reset} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Réinitialiser">
+                <button onClick={handleReset} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Réinitialiser">
                   <RotateCcw className="w-5 h-5" />
                 </button>
               </div>
+
+              {!hasEndedRedaction && (
+                <button
+                  onClick={() => {
+                    if (confirm("Voulez-vous arrêter le minuteur et valider votre rédaction ? Vous pourrez ensuite demander une correction IA ou l'envoyer à un enseignant.")) {
+                      pause();
+                      setIsRedactionFinished(true);
+                    }
+                  }}
+                  disabled={text.trim().length === 0}
+                  className="px-4 py-2 bg-[#FF0000] hover:bg-red-650 disabled:opacity-50 text-white font-bold rounded-lg text-xs transition-colors shadow-sm shadow-red-500/10 flex items-center gap-1.5"
+                >
+                  <CheckCircle className="w-4 h-4" /> Terminer la rédaction
+                </button>
+              )}
             </>
           )}
 
-          {isFinished || evaluation ? (
+          {hasEndedRedaction ? (
             <div className="flex items-center gap-2">
                <button 
                 onClick={handlePrint}
@@ -259,19 +282,28 @@ export function TrainingInterface({
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                disabled={isFinished && !evaluation}
+                disabled={hasEndedRedaction && !evaluation}
                 placeholder="Sehr geehrte Damen und Herren, ..."
                 className={cn(
                   "flex-1 w-full p-8 resize-none outline-none bg-transparent text-lg leading-relaxed placeholder:text-gray-400 dark:placeholder:text-gray-600 transition-opacity",
-                  isFinished && !evaluation && "opacity-50 grayscale cursor-not-allowed"
+                  hasEndedRedaction && !evaluation && "opacity-50 grayscale cursor-not-allowed"
                 )}
                 spellCheck={false}
               />
-              {isFinished && !evaluation && (
+              {hasEndedRedaction && !evaluation && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] pointer-events-none">
                   <div className="bg-red-500 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold flex flex-col items-center gap-2">
-                    <Clock className="w-8 h-8 animate-pulse" />
-                    <span>Temps écoulé !</span>
+                    {isFinished ? (
+                      <>
+                        <Clock className="w-8 h-8 animate-pulse" />
+                        <span>Temps écoulé !</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-8 h-8" />
+                        <span>Rédaction validée !</span>
+                      </>
+                    )}
                     <p className="text-xs font-normal opacity-90">Choisissez une option de correction ci-dessus.</p>
                   </div>
                 </div>
