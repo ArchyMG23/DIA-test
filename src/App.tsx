@@ -31,7 +31,7 @@ const DEFAULT_EXERCISES: Exercise[] = [
   {
     id: 'default-2',
     title: 'Bitte um Informationen: Freiwilligenarbeit',
-    situation: 'Sie interessieren sich für ein Projekt zur Freiwilligenarbeit im Umweltschutz in den Alpen. Sie haben eine Anzeige im Internet gesehen, aber es fehlen wichtige Details.',
+    situation: 'Sie interessieren sich für ein projet zur Freiwilligenarbeit im Umweltschutz in den Alpen. Sie haben eine Anzeige im Internet gesehen, aber es fehlen wichtige Details.',
     content: 'Schreiben Sie eine E-Mail an die Organisation "Alpen-Natur". Bitten Sie um Informationen zu folgenden Punkten:\n- Dauer des Projekts und tägliche Arbeitszeit\n- Unterkunft und Verpflegung\n- Voraussetzungen (Sprachkenntnisse, Erfahrung)\n- Kosten oder Aufwandsentschädigung',
     type: 'Information'
   },
@@ -104,6 +104,195 @@ const DEFAULT_EXERCISES: Exercise[] = [
     situation: 'Die traditionsreiche Buchhandlung "Buch & Kaffee" in Frankfurt sucht ab sofort eine studentische Aushilfe (m/w/d) für die Wochenenden (Samstage) zur Betreuung der Kunden und zur Pflege der Buchbestände.',
     content: 'Schreiben Sie Ihre Bewerbung an den Inhaber Herrn Peters. Behandeln Sie folgende Punkte:\n- Warum Sie in einer Buchhandlung arbeiten möchten\n- Ihre persönliche Lese-Affinität und Lieblingsgenres\n- Ihre Erfahrungen im Umgang mit Kunden (Freundlichkeit, Service)\n- Ihre Zuverlässigkeit und zeitliche Flexibilität am Samstag\n- Ihr gewünschter Arbeitsbeginn',
     type: 'Bewerbung'
+  },
+  {
+    id: 'default-13',
+    title: 'Beschwerde: Wellness-Wochenende',
+    situation: 'Sie haben zur Entspannung ein "Premium-Wellness-Wochenende" im Hotel "Alpenoase" gebucht. Laut Prospekt: beheizter Infinity-Pool, ruhige Lage, 5-Sterne-Zimmerservice und drei Massagen inklusive. Vor Ort: Der Pool war wegen Bauarbeiten gesperrt, lauter Lärm im Hotel ab 7 Uhr morgens, der Zimmerservice unvollständig und es gab nur eine Massage, weil das Personal unterbesetzt war.',
+    content: 'Schreiben Sie eine Beschwerde an die Hotelleitung. Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens\n- Kritik an den Wellness-Anlagen (Pool-Schließung)\n- Lärmbelästigung und mangelnder Service\n- Nicht erbrachte gebuchte Leistungen (Massagen)\n- Forderung nach einer angemessenen Entschädigung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-14',
+    title: 'Bitte um Infos: Weiterbildung Projektmanagement',
+    situation: 'Sie sind berufstätig im Bereich Logistik und möchten eine zertifizierte berufsbegleitende Weiterbildung im Bereich "Agiles Projektmanagement" absolvieren. Sie haben ein Angebot der Akademie "EduFuture" online gefunden.',
+    content: 'Schreiben Sie eine E-Mail an das Sekretariat der Akademie "EduFuture". Klären Sie folgende Punkte:\n- Genaue Termine und Uhrzeiten (Abend- oder Wochenendkurse)\n- Anerkennung des Zertifikats (z.B. PMI oder Scrum Alliance)\n- Kosten und Förderungsmöglichkeiten (z.B. Bildungsgutschein)\n- Voraussetzungen für die Teilnahme an der Abschlussprüfung',
+    type: 'Information'
+  },
+  {
+    id: 'default-15',
+    title: 'Bewerbung: Aushilfe im Fitnessstudio',
+    situation: 'Das Fitnessstudio "Fit&Fun" in Ihrer Stadt sucht eine studentische Aushilfe (m/w/d) für die Anmeldung, die Getränkebar und die gelegentliche Betreuung der Trainingsfläche am Wochenende.',
+    content: 'Schreiben Sie Ihre Bewerbung an den Studioleiter Herrn Müller. Behandeln Sie folgende Punkte:\n- Bezugnahme auf die Ausschreibung und Grund der Bewerbung\n- Ihre persönliche Sportbegeisterung und Fitnesskenntnisse\n- Erfahrungen im Umgang mit Kunden und Servicebereitschaft\n- Ihre zeitliche Verfügbarkeit am Wochenende\n- Ihr gewünschter Arbeitsbeginn',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-16',
+    title: 'Beschwerde: Online-Möbelbestellung',
+    situation: 'Sie haben beim Online-Möbelhaus "WoodStyle" ein hochwertiges Ecksofa aus Echtleder bestellt. Die Lieferzeit sollte maximal 10 Werktage betragen. Das Sofa kam erst nach 6 Wochen an. Zudem hat es die falsche Farbe (Dunkelblau statt Cognac-Braun) und an der Rückseite befindet sich ein auffälliger Riss im Leder.',
+    content: 'Schreiben Sie eine Beschwerde an den Kundenservice von "WoodStyle". Behandeln Sie folgende Punkte:\n- Grund und Bestelldaten des Schreibens\n- Kritik an der extremen Lieferverzögerung\n- Beschreibung der Mängel (Farbe, Lederriss)\n- Forderung auf Umtausch oder einen erheblichen Preisnachlass\n- Frist für die Rückmeldung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-17',
+    title: 'Bitte um Infos: Veganes Catering für Firmenfeier',
+    situation: 'Sie organisieren das jährliche Sommerfest für Ihr Unternehmen mit ca. 80 Mitarbeitern. Die Geschäftsleitung wünscht dieses Jahr ein vollständig veganes und nachhaltiges Speisenangebot. Sie interessieren sich für die Dienste von "Green Catering Hamburg".',
+    content: 'Schreiben Sie eine Anfrage-E-Mail an das Catering-Team. Klären Sie folgende Punkte:\n- Vorschläge für ein veganes Buffet (Vorspeisen, Hauptspeisen, Desserts)\n- Berücksichtigung von weiteren Unverträglichkeiten (z.B. glutenfrei)\n- Bereitstellung von Geschirr, Besteck und Servicepersonal vor Ort\n- Preiskalkulation pro Person und Lieferbedingungen',
+    type: 'Information'
+  },
+  {
+    id: 'default-18',
+    title: 'Bewerbung: Hundesitter in München',
+    situation: 'Die Agentur "Paws & Friends" vermittelt qualifizierte und liebevolle Tierbetreuer an Hundebesitzer in München, die tagsüber arbeiten. Gesucht werden tierbegeisterte Menschen für Spaziergänge und Tagesbetreuung.',
+    content: 'Schreiben Sie Ihre Bewerbung für die Aufnahme in die Betreuerkartei. Behandeln Sie folgende Punkte:\n- Motivation für die Arbeit als Hundesitter\n- Bisherige eigene Erfahrungen im Umgang mit Hunden (Rassen, Verhalten)\n- Zuverlässigkeit und Verhalten in stressigen oder unvorhergesehenen Situationen\n- Raumverhältnisse (Wohnung, Nähe zu Parks)\n- Ihre zeitliche Verfügbarkeit unter der Woche',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-19',
+    title: 'Beschwerde: Premium-Essenslieferdienst',
+    situation: 'Sie haben für einen Jahrestag ein festliches Drei-Gänge-Menü für vier Personen beim Premium-Lieferdienst "GourmetExpress" bestellt. Gegen Aufpreis wurde eine minutengenaue Lieferung garantiert. Das Essen kam 90 Minuten zu spät, die Suppe war kalt und ausgelaufen, das Hauptgericht vertauscht (vegetarisch statt Rinderfilet) und das Dessert fehlte ganz.',
+    content: 'Schreiben Sie eine Beschwerde an die Geschäftsführung von "GourmetExpress". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens und Bestelldetails\n- Massive Lieferverzögerung trotz kostenpflichtiger Garantie\n- Kritik an Verpackung, Temperatur und fehlerhafter Lieferung\n- Enttäuschung über den misslungenen festlichen Abend\n- Forderung nach vollständiger Erstattung des Preises',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-20',
+    title: 'Bitte um Infos: Sommercamp für Kinder',
+    situation: 'Sie möchten Ihren 10-jährigen Sohn für ein zweiwöchiges "Natur- und Abenteuercamp" in Thüringen anmelden, welches vom Verein "WildnisKids e.V." veranstaltet wird. Es bleiben jedoch wesentliche organisatorische Fragen offen.',
+    content: 'Schreiben Sie eine E-Mail an den Veranstalter "WildnisKids e.V.". Bitten Sie um Auskunft zu:\n- Betreuerschlüssel (Verhältnis Betreuer zu Kindern) und Qualifikationen\n- Tagesablauf, Aktivitäten und Sicherheitsvorkehrungen bei schlechtem Wetter\n- Unterkunft (Zelte oder feste Häuser) und Verpflegung (Allergene, vegetarisch)\n- Rücktrittsbedingungen bei plötzlicher Erkrankung des Kindes',
+    type: 'Information'
+  },
+  {
+    id: 'default-21',
+    title: 'Bewerbung: Social Media Assistant',
+    situation: 'Das zukunftsorientierte Mode-Startup "StyleInspo" aus Berlin sucht einen Social Media Assistant (m/w/d) auf Minijob-Basis (10-15 Stunden/Woche). Aufgaben umfassen die Erstellung von Inhalten für Instagram, TikTok und das Beantworten von Community-Fragen.',
+    content: 'Schreiben Sie Ihre Bewerbung an die Marketingleitung. Gehen Sie auf folgende Punkte ein:\n- Ihre Begeisterung für Mode und Social-Media-Plattformen\n- Erfahrungen im Bereich Content Creation (Fotos, Videos, Reels, Canva etc.)\n- Ihre Kommunikationsstärke und Deutschkenntnisse im Umgang mit Followern\n- Warum Sie speziell für das Startup "StyleInspo" arbeiten möchten\n- Ihre wöchentliche Verfügbarkeit und technisches Equipment',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-22',
+    title: 'Beschwerde: Konzertreise nach Hamburg',
+    situation: 'Sie haben beim Reisebüro "KulturReisen" ein Paket gebucht, bestehend aus einer Hotelübernachtung in Hamburg und erstklassigen Eintrittskarten für ein Konzert in der Elbphilharmonie. Die Eintrittskarten wurden Ihnen trotz Zusage nicht ins Hotel geliefert, weshalb Sie das Konzert verpassten. Zudem war das Hotelzimmer schmutzig und laut.',
+    content: 'Schreiben Sie eine Beschwerde an das Reisebüro "KulturReisen". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens und Buchungsnummer\n- Nichtzustellung der Konzertkarten und das verpasste Event\n- Mängel des Hotelzimmers (Lärm, Hygiene)\n- Enttäuschung über den zerstörten Wochenendausflug\n- Forderung auf vollständige Erstattung des Reisepreises und Schadensersatz',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-23',
+    title: 'Bitte um Infos: Coworking Space Mitgliedschaft',
+    situation: 'Sie arbeiten als freiberuflicher Softwareentwickler im Homeoffice und möchten ein professionelles Arbeitsumfeld nutzen. Sie interessieren sich für ein monatliches Abonnement im Coworking Center "Nexus Office" in Frankfurt.',
+    content: 'Schreiben Sie eine E-Mail an die Centerleitung. Erkundigen Sie sich nach folgenden Punkten:\n- Unterschied zwischen "Flex Desk" (freier Tischwechsel) und "Dedicated Desk" (fester Arbeitsplatz)\n- Technische Infrastruktur (Internet-Geschwindigkeit, Druckernutzung, Kaffeeküche)\n- Zugangsmöglichkeiten am Wochenende und zu späten Abendstunden (Keycard)\n- Buchbarkeit von Meetingräumen für Kundentermine und Preisvorteile für Mitglieder',
+    type: 'Information'
+  },
+  {
+    id: 'default-24',
+    title: 'Bewerbung: Kellner im italienischen Restaurant',
+    situation: 'Das Restaurant "Bella Italia" in Köln sucht für die abendlichen Stoßzeiten und das Wochenende eine engagierte Servicekraft (m/w/d). Erfahrungen im Service sind gewünscht, aber keine zwingende Voraussetzung.',
+    content: 'Schreiben Sie Ihre aussagekräftige Bewerbung an den Geschäftsführer Herrn Rossi. Behandeln Sie folgende Punkte:\n- Ihr Bezug zur Gastronomie und Grund der Bewerbung\n- Ihre Stärken im Servicebereich (Freundlichkeit, Stressresistenz, Teamfähigkeit)\n- Bisherige Tätigkeiten im Kundenkontakt oder in der Gastronomie\n- Ihre Sprachkenntnisse (Deutsch, Englisch, eventuell Italienisch)\n- Ihre zeitliche Flexibilität am Abend und am Wochenende',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-25',
+    title: 'Beschwerde: Fitnessstudio "VitalLife"',
+    situation: 'Sie haben einen Jahresvertrag im Studio "VitalLife" unter der Bedingung abgeschlossen, dass Ihnen der Zutritt zum Saunabereich und die Teilnahme an Fitnesskursen jederzeit kostenlos zustehen. Seit drei Monaten ist die Sauna defekt. Außerdem wurden fast alle Pilates- und Yogakurse ohne Ersatz gestrichen. Trotzdem bucht das Studio den vollen Monatsbeitrag ab.',
+    content: 'Schreiben Sie eine Beschwerde an den Kundenservice von "VitalLife". Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens und Mitgliedsnummer\n- Dauerhafter Ausfall des Saunabereichs und mangelnde Reparatur\n- Streichung der vertraglich vereinbarten Kurse\n- Forderung einer angemessenen Beitragsminderung für die Ausfallzeit\n- Fristsetzung zur Lösung oder Androhung einer außerordentlichen Kündigung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-26',
+    title: 'Bitte um Infos: Deutschprüfungen für Mediziner',
+    situation: 'Sie haben ein abgeschlossenes Medizinstudium im Ausland absolviert und möchten bald als Assistenzarzt in Deutschland arbeiten. Zur Beantragung der Approbation benötigen Sie die Fachsprachenprüfung (FSP). Sie interessieren sich für die Vorbereitungskurse des Anbieters "Med-Deutsch Akademie".',
+    content: 'Schreiben Sie eine Anfrage-E-Mail an die Kursleitung der "Med-Deutsch Akademie". Fragen Sie nach:\n- Dauer, Startterminen und Preisen des speziellen FSP-Zertifikatskurses\n- Lerninhalten (Patientengespräche, Arztbriefe, medizinische Dokumentation)\n- Qualifikationen der Dozenten (Mediziner oder zertifizierte Sprachlehrer)\n- Möglichkeit eines Online- oder Hybridkurses und Bestehensquote der Teilnehmer',
+    type: 'Information'
+  },
+  {
+    id: 'default-27',
+    title: 'Bewerbung: Mitarbeiter im Kundendienst',
+    situation: 'Das E-Commerce-Unternehmen "EcoCart" vertreibt ökologische Haushaltswaren und sucht ab sofort Mitarbeiter (m/w/d) im Kundenservice für die schriftliche und telefonische Kundenbetreuung, vollständig im Homeoffice (Remote).',
+    content: 'Schreiben Sie Ihre Bewerbung an die Personalabteilung von "EcoCart". Gehen Sie auf folgende Punkte ein:\n- Grund der Bewerbung und Ihre Identifikation mit ökologischen Produkten\n- Ihre Stärken in der schriftlichen und mündlichen Kommunikation (Freundlichkeit, Geduld)\n- Ihre Erfahrungen mit PC-Arbeit, Kundensystemen oder Office-Paketen\n- Ihr eingerichteter, ungestörter Heimarbeitsplatz mit stabiler Internetverbindung\n- Ihre Gehaltsvorstellung (Stundenlohn) und gewünschte Wochenarbeitszeit',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-28',
+    title: 'Beschwerde: Hotelaufenthalt "Seeblick"',
+    situation: 'Sie haben für einen Erholungsurlaub ein Doppelzimmer mit Seeblick im Hotel "Seeblick" reserviert. Bei Ihrer Ankunft teilte man Ihnen mit, dass das Hotel überbucht sei. Sie mussten in ein kleineres Zimmer im Souterrain direkt neben der lauten Heizungsanlage umziehen. Der versprochene Seeblick fehlte, und das Frühstücksbuffet war ungenießbar.',
+    content: 'Schreiben Sie eine Beschwerde an die Hoteldirektion. Behandeln Sie folgende Punkte:\n- Grund Ihres Schreibens und Buchungszeitraum\n- Kritik an der Überbuchung und der minderwertigen Ersatzunterkunft\n- Lärmbelästigung durch die Heizung und fehlende Erholung\n- Mangelnde Qualität der Verpflegung (Frühstück)\n- Forderung auf Rückerstattung der Preisdifferenz und angemessene Entschädigung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-29',
+    title: 'Bitte um Infos: Kletterpark Teambuilding',
+    situation: 'Sie sind Abteilungsleiter in einer IT-Firma mit 25 Mitarbeitern. Zur Stärkung des Teamgeists planen Sie einen Betriebsausflug in den "Abenteuer-Kletterwald Taunus". Sie möchten ein maßgeschneidertes Teambuilding-Programm buchen.',
+    content: 'Schreiben Sie eine Anfrage an das Event-Team des Kletterwalds. Klären Sie folgende Punkte:\n- Spezielle Gruppen- und Teambuilding-Aktivitäten mit Trainerbegleitung\n- Sicherheitskonzept, notwendige Kleidung und Einweisung für Anfänger\n- Catering-Optionen (Grillplatz mieten, Catering-Service oder Restaurant vor Ort)\n- Gruppenrabatte und Stornierungsbedingungen bei starkem Regen',
+    type: 'Information'
+  },
+  {
+    id: 'default-30',
+    title: 'Bewerbung: Event-Aushilfe auf Musikmesse',
+    situation: 'Für die internationale Musikmesse "Musicon" in Frankfurt sucht der Veranstalter "MesseFrankfurt GmbH" kurzfristig zweisprachige Event-Aushilfen (m/w/d) für die Besucherregistrierung, Wegeleitung und Informationsstände.',
+    content: 'Schreiben Sie Ihre Bewerbung für diesen Messejob. Behandeln Sie folgende Punkte:\n- Bezug auf die Stellenausschreibung und Motivation für die Mitarbeit auf der Musikmesse\n- Ihre Sprachkenntnisse (Deutsch, Englisch fließend, weitere Sprachen)\n- Ihre Kontaktfreudigkeit, Belastbarkeit bei hohem Besucheraufkommen und gepflegtes Auftreten\n- Erfahrungen aus früheren Messen, Promotionjobs oder dem Kundenservice\n- Bestätigung Ihrer uneingeschränkten Zugänglichkeit an allen vier Messetagen',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-31',
+    title: 'Beschwerde: Streamingdienst Abo-Abrechnung',
+    situation: 'Sie nutzen seit einem Jahr den Streamingdienst "MoviePlus". Vor kurzem wurde ohne Ihre Zustimmung der Paketpreis um 50 % erhöht. Zudem wurde Ihnen trotz fristgerechter Kündigung des Premium-Zusatzpakets der Betrag für drei weitere Monate abgebucht. Der telefonische Support hat Ihr Anliegen ignoriert.',
+    content: 'Schreiben Sie eine formelle Beschwerde an den Kundenservice von "MoviePlus". Behandeln Sie folgende Punkte:\n- Grund des Schreibens, Kundennummer und Vertragsdaten\n- Kritik an der unangekündigten Preiserhöhung\n- Rechtswidrige Abbuchung trotz nachweisbar fristgerechter Kündigung\n- Enttäuschung über die Servicequalität und Untätigkeit des telefonischen Supports\n- Forderung zur sofortigen Rücküberweisung des fälschlicherweise eingezogenen Geldes',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-32',
+    title: 'Bitte um Infos: Auslandssemester in Heidelberg',
+    situation: 'Sie studieren Germanistik in Ihrem Heimatland und möchten im nächsten Frühjahr ein einsemestriges Erasmus-Auslandsstudium an der Universität Heidelberg absolvieren. Viele administrative Schritte sind noch unklar.',
+    content: 'Schreiben Sie eine E-Mail an das Akademische Auslandsamt (AAA) der Universität Heidelberg. Fragen Sie nach:\n- Fristen für die Einreichung der Zulassungsunterlagen und Anerkennung von bisherigen Noten\n- Unterstützung bei der Vermittlung eines Zimmers in einem staatlichen Studentenwohnheim\n- Angebot von fachbegleitenden Deutschkursen für ausländische Studenten vor Semesterbeginn\n- Orientierungsangebote (Buddy-Programm, Einführungsveranstaltungen)',
+    type: 'Information'
+  },
+  {
+    id: 'default-33',
+    title: 'Bewerbung: Werkstudent im IT-Support',
+    situation: 'Das Software-Unternehmen "NetSolutions" in Stuttgart sucht einen Werkstudenten (m/w/d) für den hausinternen IT-Support und die Pflege der Netzwerksicherheit (16-20 Std./Woche).',
+    content: 'Schreiben Sie ein aussagekräftiges Bewerbungsschreiben. Gehen Sie auf folgende Punkte ein:\n- Bezugnahme auf das Stellenangebot und Grund Ihrer Bewerbung\n- Ihr Studiengang (Informatik, Wirtschaftsinformatik o.Ä.) und aktuelles Semester\n- Praktische Kenntnisse in Betriebssystemen, Netzwerken, Hardware-Fehleranalyse\n- Ihre Arbeitsweise (selbstständig, zielstrebig, teamorientiert)\n- Ihre zeitliche Verfügbarkeit unter der Woche (Abstimmung mit Vorlesungszeiten)',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-34',
+    title: 'Beschwerde: Erlebnis-Gutschein "Ballonfahrt"',
+    situation: 'Sie bekamen von Freunden einen Erlebnis-Gutschein für eine "Exklusive Ballonfahrt bei Sonnenaufgang über dem Bodensee mit Champagner-Picknick" von der Agentur "SkyAdventures". Der Termin wurde viermal wegen Kleinigkeiten abgesagt. Als die Fahrt stattfand, war es mittags, es ging über ein unschönes Industriegebiet, es gab 12 statt 2 Mitflieger und statt Champagner gab es Apfelschorle.',
+    content: 'Schreiben Sie eine Beschwerde an die Zentrale von "SkyAdventures". Behandeln Sie folgende Punkte:\n- Grund des Schreibens und Gutschein-Nummer\n- Ärger über die extrem komplizierte und unkooperative Terminfindung\n- Abweichung der Realität vom Gutscheintext (Tageszeit, Route, Teilnehmerzahl)\n- Enttäuschung über das lieblose Picknick ohne versprochenen Champagner\n- Forderung auf teilweise Rückerstattung des Gutscheinwertes in bar',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-35',
+    title: 'Bitte um Infos: Franchise-Konzept Eröffnung',
+    situation: 'Sie planen die Eröffnung eines eigenen, gesunden Bistros und interessieren sich sehr für das erfolgreiche vegane Franchise-Konzept von "BioSalad Organics". Sie verfügen über etwas Startkapital und gastronomische Erfahrung.',
+    content: 'Schreiben Sie eine E-Mail an die Franchise-Zentrale der "BioSalad Organics GmbH". Klären Sie folgende Punkte:\n- Voraussetzungen (Eigenkapital, berufliche Qualifikationen, Standortbedingungen)\n- Struktur der Franchise-Gebühren (Einstiegsgebühr, monatliche Umsatzbeteiligung)\n- Unterstützung beim Marketing, Ladendesign, der Lieferkette und Mitarbeiterschulung\n- Zusendung von ausführlichem Informationsmaterial und Ablauf einer Bewerbung als Partner',
+    type: 'Information'
+  },
+  {
+    id: 'default-36',
+    title: 'Bewerbung: Stadtführer in Berlin',
+    situation: 'Die Tourismus-Agentur "BerlinExplorer" sucht für Stadtrundgänge sowie geführte Fahrradtouren durch Berlin-Mitte und Kreuzberg enthusiastische, offene und ortskundige Stadtführer (m/w/d) für die Wochenenden.',
+    content: 'Schreiben Sie Ihre Bewerbung als Stadtführer an den Personalverantwortlichen. Behandeln Sie folgende Punkte:\n- Warum Sie Stadtführer in Berlin werden möchten und Ihre Verbindung zur Stadt\n- Ihre Ortskenntnisse in Berlin (Geschichte, Kultur, Geheimtipps)\n- Ihre Fremdsprachenkenntnisse (Deutsch verhandlungssicher, weitere Sprachen von Vorteil)\n- Erfahrungen im Vortragen vor größeren Gruppen (Präsentationen, offene Art)\n- Ihre zeitliche Verfügbarkeit am Wochenende und sportliche Fitness (Fahrradtouren)',
+    type: 'Bewerbung'
+  },
+  {
+    id: 'default-37',
+    title: 'Beschwerde: Online-Fotobuch Druckfehler',
+    situation: 'Sie haben über das Portal "PixPrint" ein hochwertiges, teures Hardcover-Fotobuch mit 100 Seiten als Geschenk für die Goldene Hochzeit Ihrer Großeltern bestellt. Bei der Lieferung stellten Sie fest: Der Bucheinband ist schief aufgeklebt, die Farben sind extrem dunkel und verwaschen, und auf 5 Seiten fehlt der gedruckte Text komplett, obwohl er im Vorschau-Editor korrekt angezeigt wurde.',
+    content: 'Schreiben Sie eine Beschwerde an die Reklamationsabteilung von "PixPrint". Behandeln Sie folgende Punkte:\n- Grund des Schreibens, Kundennummer und Bestell-ID\n- Beschreibung der gravierenden Fehldrucke und Qualitätsmängel (Farbe, Einband)\n- Nicht-Abdruck der Texte als schwerer Mangel\n- Verlust des geplanten Geschenks und zeitlicher Druck wegen des Hochzeitstags\n- Forderung auf kostenlosen Neudruck innerhalb von 5 Tagen oder Erstattung der Kosten mit Entschädigung',
+    type: 'Beschwerde'
+  },
+  {
+    id: 'default-38',
+    title: 'Bitte um Infos: Mitgliedschaft im Tennisclub',
+    situation: 'Sie sind vor Kurzem in eine neue Stadt gezogen und möchten einem lokalen Tennisclub beitreten, um aktiv Sport zu treiben und Kontakte zu knüpfen. Sie sind am "Tennis-Club Rot-Weiß" interessiert.',
+    content: 'Schreiben Sie eine E-Mail an den Vorstand des Tennis-Clubs. Erkundigen Sie sich nach:\n- Aufnahmegebühr und monatlichem/jährlichem Mitgliedsbeitrag (Ermäßigung für Studenten/Familien)\n- Ausstattung des Clubs (Anzahl der Außen- und Hallenplätze, Buchungssystem für Spielfelder)\n- Trainingsmöglichkeiten für Erwachsene (Gruppentraining mit professionellem Trainer, Spielstärkeneinstufung)\n- Clubleben, Turnieren für Freizeitsportler und Kennenlern-Treffs für neue Mitglieder',
+    type: 'Information'
+  },
+  {
+    id: 'default-39',
+    title: 'Bewerbung: Rezeptionist in Jugendherberge',
+    situation: 'Die Jugendherberge "CityHostel Dresden" sucht ab der kommenden Frühjahrssaison einen Rezeptionisten (m/w/d) in Teilzeit (20 Stunden/Woke) zur Betreuung internationaler Backpacker, Check-in/Check-out und Organisation kleiner Events.',
+    content: 'Schreiben Sie Ihre Bewerbung für das CityHostel. Behandeln Sie folgende Punkte:\n- Ihre Motivation, in einem lebhaften, internationalen Hostel zu arbeiten\n- Erste Erfahrungen im Beherbergungsgewerbe oder im engen Kundenkontakt\n- Ausgeprägte Sprachkenntnisse (Deutsch verhandlungssicher, Englisch fließend, weitere Sprachen)\n- Ihre Computerkenntnisse (E-Mail, Buchungssoftware, Social Media)\n- Flexibilität bei Schichtarbeit (Früh-, Spät- und gelegentliche Wochenendschichten)',
+    type: 'Bewerbung'
   }
 ];
 
@@ -115,7 +304,15 @@ export default function App() {
     const saved = localStorage.getItem('dia_exercises');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.length > 0) return parsed;
+      if (parsed.length > 0) {
+        const combined = [...parsed];
+        DEFAULT_EXERCISES.forEach(def => {
+          if (!combined.some(c => c.id === def.id)) {
+            combined.push(def);
+          }
+        });
+        return combined;
+      }
     }
     return DEFAULT_EXERCISES;
   });
@@ -562,11 +759,11 @@ export default function App() {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <span className="font-bold text-sm tracking-widest text-[#FF0000]">DIA SCHREIBEN</span>
+        <span className="font-bold text-sm tracking-widest text-[#FF0000]">Schreiben</span>
         <div className="w-9" />
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar backdrop for mobile */}
         {isSidebarOpen && (
           <div 
@@ -579,7 +776,7 @@ export default function App() {
         <div className={`fixed inset-y-0 left-0 w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative md:flex transition-transform duration-300 ease-in-out shrink-0`}>
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold tracking-tight text-[#FF0000]">DIA SCHREIBEN</h1>
+              <h1 className="text-xl font-bold tracking-tight text-[#FF0000]">Schreiben</h1>
               <button 
                 onClick={() => setIsSidebarOpen(false)}
                 className="md:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
@@ -854,7 +1051,7 @@ export default function App() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {userProfile?.role === 'teacher' ? (
             <TeacherDashboard />
           ) : isUploading ? (

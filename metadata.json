@@ -1,5 +1,5 @@
 {
-  "name": "DIA SCHREIBEN",
+  "name": "Schreiben",
   "description": "Application d'entraînement au Schreiben (expression écrite) du Telc B2 avec analyse IA.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

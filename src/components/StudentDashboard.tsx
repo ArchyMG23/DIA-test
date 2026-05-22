@@ -50,8 +50,10 @@ export function StudentDashboard({
   }).slice(0, 3); // top 3 recomendations
 
   const filteredExercises = exercises.filter(ex => {
-    const matchesSearch = ex.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          ex.situation.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = ex.title || '';
+    const situation = ex.situation || '';
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          situation.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'Tous' || ex.type === filterType;
     return matchesSearch && matchesType;
   });
@@ -276,7 +278,7 @@ export function StudentDashboard({
                     <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-750 flex items-center justify-between shrink-0">
                       <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                         {isDone ? (
-                          <span className="text-green-500 font-bold">Note: {prog.evaluation.score}/100</span>
+                          <span className="text-green-500 font-bold">Note: {prog.evaluation?.score !== undefined ? prog.evaluation.score : 'N/A'}/100</span>
                         ) : hasStarted ? (
                           <span>Brouillon sauvegardé</span>
                         ) : (

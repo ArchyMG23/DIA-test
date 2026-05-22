@@ -38,7 +38,7 @@ export function UploadSection({ onUpload, isExtracting, isOnline }: UploadSectio
   return (
     <div className="max-w-2xl mx-auto w-full p-8">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">DIA SCHREIBEN</h1>
+        <h1 className="text-4xl font-bold tracking-tight mb-4">Schreiben</h1>
         <p className="text-lg text-gray-500 dark:text-gray-400">
           Uploadez un sujet Telc B2 (PDF ou Image) pour commencer l'entraînement.
         </p>

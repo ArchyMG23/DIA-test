@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, updateDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { db, auth, Submission } from '../lib/firebase';
-import { CheckCircle, Clock, AlertCircle, Send, Highlighter, GraduationCap } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Send, Highlighter, GraduationCap, ArrowLeft } from 'lucide-react';
 import Markdown from 'react-markdown';
 
 export function TeacherDashboard() {
@@ -57,12 +57,15 @@ export function TeacherDashboard() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Submissions List */}
-      <div className="w-80 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="font-bold flex items-center gap-2">
+      <div className={`${selectedSub ? 'hidden lg:flex' : 'flex'} w-full lg:w-80 border-r border-[#E5E7EB] dark:border-gray-800 bg-[#F9FAFB] dark:bg-gray-900/50 flex-col shrink-0 h-full`}>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+          <h2 className="font-bold flex items-center gap-2 text-sm sm:text-base">
             <Clock className="w-4 h-4 text-indigo-500" />
             Copies à corriger
           </h2>
+          <span className="bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold px-2 py-0.5 rounded text-[10px]">
+            {submissions.length}
+          </span>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {submissions.map(sub => (
@@ -75,12 +78,12 @@ export function TeacherDashboard() {
                   grammarScore: 0, vocabularyScore: 0, structureScore: 0, connectorsScore: 0, overallFeedback: '', highlightedText: sub.text
                 });
               }}
-              className={`w-full text-left p-4 rounded-xl border transition-all ${selectedSub?.id === sub.id ? 'bg-white dark:bg-gray-800 border-indigo-500 shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-200/50 dark:hover:bg-gray-800/50'}`}
+              className={`w-full text-left p-4 rounded-xl border transition-all ${selectedSub?.id === sub.id ? 'bg-white dark:bg-gray-800 border-indigo-500 shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-250/50 dark:hover:bg-gray-800/50'}`}
             >
               <div className="flex justify-between items-start gap-2 mb-1">
                 <h3 className="font-semibold text-sm truncate">{sub.exerciseTitle}</h3>
                 {sub.status === 'corrected' ? (
-                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0 animation-fadeIn" />
                 ) : (
                   <AlertCircle className="w-4 h-4 text-orange-500 shrink-0" />
                 )}
@@ -90,25 +93,34 @@ export function TeacherDashboard() {
           ))}
           {submissions.length === 0 && (
             <div className="text-center py-10 opacity-50">
-              <p className="text-sm">Aucune copie reçue.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Aucune copie reçue.</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Correction Zone */}
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className={`${!selectedSub ? 'hidden lg:block' : 'block'} flex-1 overflow-y-auto p-4 sm:p-8`}>
         {selectedSub ? (
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">{selectedSub.exerciseTitle}</h2>
-                <p className="text-gray-500">Statut: {selectedSub.status === 'corrected' ? 'Déjà corrigé' : 'En attente'}</p>
+          <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-gray-150 dark:border-gray-800 pb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedSub(null)}
+                  className="lg:hidden p-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl text-gray-700 dark:text-gray-300 transition-colors"
+                  title="Retourner à la liste"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedSub.exerciseTitle}</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Statut : {selectedSub.status === 'corrected' ? 'Déjà corrigé' : 'En attente'}</p>
+                </div>
               </div>
               {selectedSub.status === 'pending' && (
                 <button 
                   onClick={handleCorrect}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
+                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 w-full sm:w-auto text-sm shrink-0"
                 >
                   <Send className="w-4 h-4" /> Envoyer la correction
                 </button>

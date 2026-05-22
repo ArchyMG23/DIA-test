@@ -14,8 +14,8 @@ export default defineConfig(({mode}) => {
         registerType: 'autoUpdate',
         injectRegister: 'auto',
         manifest: {
-          name: 'DIA SCHREIBEN',
-          short_name: 'DIA SCHREIBEN',
+          name: 'Schreiben',
+          short_name: 'Schreiben',
           description: 'Entraînement au test Telc B2 Schreiben',
           theme_color: '#FF0000',
           background_color: '#ffffff',
