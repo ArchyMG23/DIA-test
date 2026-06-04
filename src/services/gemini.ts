@@ -1,6 +1,17 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("Clé API Gemini manquante. Veuillez configurer la variable d'environnement GEMINI_API_KEY.");
+    }
+    aiClient = new GoogleGenAI({ apiKey: key });
+  }
+  return aiClient;
+}
 
 export interface Exercise {
   id: string;
@@ -36,7 +47,7 @@ export async function extractExercises(fileData: string, mimeType: string): Prom
     - Le type de lettre (ex: "Beschwerde", "Information", "Bewerbung").
   `;
 
-  const response = await ai.models.generateContent({
+  const response = await getAiClient().models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: {
       parts: [
@@ -107,7 +118,7 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAiClient().models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
