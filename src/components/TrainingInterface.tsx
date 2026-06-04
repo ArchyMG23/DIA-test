@@ -33,6 +33,9 @@ export function TrainingInterface({
   const { minutes, seconds, isActive, isWarning, isFinished, start, pause, reset } = useTimer(30);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+  // The session counts as started if they already submitted, have written text, have an evaluation, or started manually
+  const [hasStartedSession, setHasStartedSession] = useState(!!evaluation || (!!initialText && initialText.trim().length > 0));
+
   const hasEndedRedaction = isFinished || isRedactionFinished || !!evaluation;
 
   const insertSpecialChar = (char: string) => {
@@ -140,7 +143,7 @@ export function TrainingInterface({
           <button 
             onClick={onExit}
             className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-center shrink-0"
-            title="Quitter et sauvegarder"
+            title="Quitter et abandonner l'exercice (perte des modifications)"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -154,30 +157,18 @@ export function TrainingInterface({
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {!evaluation && (
             <>
-              <div className={cn(
-                "flex items-center gap-1.5 px-2 py-1 sm:px-4 sm:py-2 rounded-lg font-mono text-sm sm:text-lg md:text-xl font-bold transition-colors",
-                isWarning ? "bg-[#FF0000]/10 text-[#FF0000]" : "bg-gray-100 dark:bg-gray-800",
-                isFinished && "bg-red-500 text-white"
-              )}>
-                <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
-              </div>
-              
-              <div className="flex items-center gap-0.5 sm:gap-1">
-                {isActive ? (
-                  <button onClick={pause} className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Pause">
-                    <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                ) : (
-                  <button onClick={start} className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Débuter" disabled={hasEndedRedaction}>
-                    <Play className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                  </button>
-                )}
-                <button onClick={handleReset} className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" title="Réinitialiser">
-                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-              </div>
+              {hasStartedSession && (
+                <div className={cn(
+                  "flex items-center gap-1.5 px-2 py-1 sm:px-4 sm:py-2 rounded-lg font-mono text-sm sm:text-lg md:text-xl font-bold transition-colors select-none",
+                  isWarning ? "bg-[#FF0000]/10 text-[#FF0000]" : "bg-gray-100 dark:bg-gray-800",
+                  isFinished && "bg-red-500 text-white"
+                )}>
+                  <Clock className="w-4 h-4 text-gray-400 select-none animate-pulse" />
+                  <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
+                </div>
+              )}
 
-              {!hasEndedRedaction && (
+              {hasStartedSession && !hasEndedRedaction && (
                 <button
                   onClick={() => {
                     if (confirm("Voulez-vous arrêter le minuteur et valider votre rédaction ? Vous pourrez ensuite demander une correction IA ou l'envoyer à un enseignant.")) {
@@ -345,59 +336,98 @@ export function TrainingInterface({
 
           {activeTab === 'write' || activeTab === 'topic' ? (
             <div className="relative flex-1 flex flex-col min-h-0">
-              <textarea
-                ref={textareaRef}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={hasEndedRedaction && !evaluation}
-                placeholder="Sehr geehrte Damen und Herren, ..."
-                className={cn(
-                  "flex-1 w-full p-4 sm:p-8 resize-none outline-none bg-transparent text-[15px] sm:text-lg leading-relaxed placeholder:text-gray-400 dark:placeholder:text-gray-600 transition-opacity",
-                  hasEndedRedaction && !evaluation && "opacity-50 grayscale cursor-not-allowed"
-                )}
-                spellCheck={false}
-              />
-              {hasEndedRedaction && !evaluation && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] pointer-events-none p-4">
-                  <div className="bg-red-500 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex flex-col items-center gap-2 text-center max-w-sm">
-                    {isFinished ? (
-                      <>
-                        <Clock className="w-8 h-8 animate-pulse" />
-                        <span>Temps écoulé !</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-8 h-8" />
-                        <span>Rédaction validée !</span>
-                      </>
-                    )}
-                    <p className="text-xs font-normal opacity-90">Choisissez une option de correction ci-dessus.</p>
+              {!hasStartedSession && !evaluation ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 text-center bg-gray-50/30 dark:bg-gray-950/20 select-none overflow-y-auto">
+                  <div className="max-w-md w-full p-6 sm:p-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl space-y-6">
+                    <div className="w-16 h-16 bg-[#FF0000]/10 text-[#FF0000] rounded-full flex items-center justify-center mx-auto">
+                      <Clock className="w-8 h-8 animate-pulse" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Prêt à commencer l'exercice ?</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-normal">
+                        Vous disposez de <strong className="text-gray-800 dark:text-gray-200">30 minutes</strong> pour rédiger votre lettre d'examen.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl text-left space-y-2">
+                      <h4 className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">⚠️ Consignes de sécurité du minuteur :</h4>
+                      <ul className="text-xs text-amber-800 dark:text-amber-400 list-disc list-inside space-y-1 leading-normal">
+                        <li>Le minuteur tourne en continu. Pas de pause ou de réinitialisation.</li>
+                        <li><strong>Si vous fermez ou rechargez l'application, votre texte sera perdu.</strong></li>
+                        <li>Écrivez directement dans la zone de saisie après le lancement.</li>
+                      </ul>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHasStartedSession(true);
+                        start();
+                      }}
+                      className="w-full py-3 px-5 bg-[#FF0000] hover:bg-red-650 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-red-500/10 text-xs sm:text-sm cursor-pointer"
+                    >
+                      Démarrer le minuteur & Commencer
+                    </button>
                   </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  <textarea
+                    ref={textareaRef}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    disabled={hasEndedRedaction && !evaluation}
+                    placeholder="Sehr geehrte Damen und Herren, ..."
+                    className={cn(
+                      "flex-1 w-full p-4 sm:p-8 resize-none outline-none bg-transparent text-[15px] sm:text-lg leading-relaxed placeholder:text-gray-400 dark:placeholder:text-gray-600 transition-opacity",
+                      hasEndedRedaction && !evaluation && "opacity-50 grayscale cursor-not-allowed"
+                    )}
+                    spellCheck={false}
+                  />
+                  {hasEndedRedaction && !evaluation && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] pointer-events-none p-4 w-full">
+                      <div className="bg-red-500 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex flex-col items-center gap-2 text-center max-w-sm pointer-events-auto">
+                        {isFinished ? (
+                          <>
+                            <Clock className="w-8 h-8 animate-pulse" />
+                            <span>Temps écoulé !</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-8 h-8" />
+                            <span>Rédaction validée !</span>
+                          </>
+                        )}
+                        <p className="text-xs font-normal opacity-90">Choisissez une option de correction ci-dessus.</p>
+                      </div>
+                    </div>
+                  )}
 
-              {/* German Special Characters helper panel */}
-              {!hasEndedRedaction && (
-                <div className="px-4 sm:px-8 py-2 border-t border-gray-100 dark:border-gray-900 bg-gray-50/50 dark:bg-gray-900/10 flex items-center gap-1.5 flex-wrap shrink-0">
-                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mr-1.5 select-none">Caractères Allemands :</span>
-                  {['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'].map(char => (
-                    <button
-                      key={char}
-                      type="button"
-                      onClick={() => insertSpecialChar(char)}
-                      className="w-8 h-8 sm:w-9 sm:h-9 text-sm sm:text-base font-semibold bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-extralight border-gray-200 dark:border-gray-700 rounded-lg shadow-sm active:scale-95 transition-all text-gray-800 dark:text-gray-200 flex items-center justify-center shrink-0"
-                      title={`Insérer ${char}`}
-                    >
-                      {char}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  {/* German Special Characters helper panel */}
+                  {!hasEndedRedaction && (
+                    <div className="px-4 sm:px-8 py-2 border-t border-gray-100 dark:border-gray-900 bg-gray-50/50 dark:bg-gray-900/10 flex items-center gap-1.5 flex-wrap shrink-0">
+                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mr-1.5 select-none">Caractères Allemands :</span>
+                      {['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'].map(char => (
+                        <button
+                          key={char}
+                          type="button"
+                          onClick={() => insertSpecialChar(char)}
+                          className="w-8 h-8 sm:w-9 sm:h-9 text-sm sm:text-base font-semibold bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-extralight border-gray-200 dark:border-gray-700 rounded-lg shadow-sm active:scale-95 transition-all text-gray-800 dark:text-gray-200 flex items-center justify-center shrink-0"
+                          title={`Insérer ${char}`}
+                        >
+                          {char}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-              <div className="px-4 sm:px-8 py-3 border-t border-gray-150 dark:border-gray-900 text-[10px] uppercase font-bold text-gray-400 flex justify-between shrink-0 select-none">
-                <span>{text.trim().split(/\s+/).filter(w => w.length > 0).length} mots</span>
-                <span>Telc B2 (150-200 mots)</span>
-              </div>
+                  <div className="px-4 sm:px-8 py-3 border-t border-gray-150 dark:border-gray-900 text-[10px] uppercase font-bold text-gray-400 flex justify-between shrink-0 select-none">
+                    <span>{text.trim().split(/\s+/).filter(w => w.length > 0).length} mots</span>
+                    <span>Telc B2 (150-200 mots)</span>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-4 sm:p-8">

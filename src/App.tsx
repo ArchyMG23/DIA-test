@@ -384,35 +384,20 @@ export default function App() {
 
       if (u) {
         const profileRef = doc(db, 'users', u.uid);
-        unsubscribeProfile = onSnapshot(profileRef, async (snap) => {
+        unsubscribeProfile = onSnapshot(profileRef, (snap) => {
           if (snap.exists()) {
             setUserProfile(snap.data());
           } else {
-            console.log("No profile found in Firestore for uid:", u.uid, ". Initializing fallback...");
+            console.log("No profile found in Firestore for uid:", u.uid, ". Using local auth data as fallback...");
             const fallbackProfile = {
               uid: u.uid,
               email: u.email || '',
-              displayName: u.displayName || '',
+              displayName: u.displayName || u.email?.split('@')[0] || 'Utilisateur',
               photoURL: u.photoURL || null,
               role: 'student' as const,
               createdAt: new Date()
             };
             setUserProfile(fallbackProfile);
-            
-            // Background self-healing creation of missing profile document
-            try {
-              await setDoc(profileRef, {
-                uid: u.uid,
-                email: u.email || '',
-                displayName: u.displayName || '',
-                photoURL: u.photoURL || null,
-                role: 'student',
-                createdAt: serverTimestamp()
-              }, { merge: true });
-              console.log("Automatically created missing profile in Firestore.");
-            } catch (createErr) {
-              console.warn("Could not auto-create user profile document in Firestore:", createErr);
-            }
           }
         }, (err) => {
           console.error("Profile sync error:", err);
@@ -476,7 +461,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Sync progress from Firestore
+  // Sync progress from Firestore (restore only finished/evaluated exercises)
   useEffect(() => {
     if (!user) return;
 
@@ -484,15 +469,23 @@ export default function App() {
       const cloudProgress: Record<string, SavedProgress> = {};
       snapshot.forEach((doc) => {
         const data = doc.data();
-        cloudProgress[doc.id] = {
-          text: data.text,
-          evaluation: data.evaluation || null
-        };
+        // Only load if evaluation exists (uncompleted drafts must not be loaded/restored)
+        if (data.evaluation) {
+          cloudProgress[doc.id] = {
+            text: data.text,
+            evaluation: data.evaluation
+          };
+        }
       });
       
-      if (Object.keys(cloudProgress).length > 0) {
-        setProgress(prev => ({ ...prev, ...cloudProgress }));
-      }
+      setProgress(prev => {
+        // Build a state where we overwrite/populate with cloud completed evaluations 
+        const updated = { ...prev };
+        Object.entries(cloudProgress).forEach(([id, val]) => {
+          updated[id] = val;
+        });
+        return updated;
+      });
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `users/${user.uid}/progress`);
     });
@@ -502,52 +495,51 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
-  const pendingTextsRef = useRef<Record<string, string>>({});
+  const selectExercise = async (id: string | null, forceUploadView = false) => {
+    // Check if the current exercise has written text without evaluation (volatile draft)
+    const activeProgress = selectedId ? progress[selectedId] : null;
+    const hasUnsavedDraft = activeProgress && !activeProgress.evaluation && ((activeProgress.text && activeProgress.text.trim().length > 0) || isTimerRunning);
 
-  const flushPendingSave = useCallback(async (id: string) => {
-    if (saveTimeoutRef.current[id]) {
-      clearTimeout(saveTimeoutRef.current[id]);
-      delete saveTimeoutRef.current[id];
-    }
-
-    const pendingText = pendingTextsRef.current[id];
-    if (pendingText !== undefined && user) {
-      try {
-        const progRef = doc(db, 'users', user.uid, 'progress', id);
-        await setDoc(progRef, {
-          exerciseId: id,
-          text: pendingText,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-        delete pendingTextsRef.current[id];
-      } catch (e) {
-        console.warn("Error flushing save:", e);
-      }
-    }
-  }, [user]);
-
-  const selectExercise = async (id: string | null) => {
-    if (selectedId) {
-      await flushPendingSave(selectedId);
-    }
-
-    if (isTimerRunning) {
-      if (confirm("Le minuteur est en cours. Voulez-vous suspendre l'exercice et enregistrer votre brouillon pour continuer plus tard ?")) {
-        setIsTimerRunning(false);
-      } else {
+    if (hasUnsavedDraft) {
+      if (!confirm("Attention : Votre rédaction en cours n'a pas été évaluée et sera PERDUE si vous quittez ou changez de sujet. Voulez-vous continuer ?")) {
         return;
       }
+      // Immediately clear the volatile draft from state
+      setProgress(prev => {
+        const updated = { ...prev };
+        delete updated[selectedId!];
+        return updated;
+      });
     }
+
     setSelectedId(id);
-    setIsUploading(false);
+    setIsUploading(forceUploadView);
     setIsSidebarOpen(false);
+    setIsTimerRunning(false); // Reset timer active state on exercise swap
   };
 
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const activeProgress = selectedId ? progress[selectedId] : null;
+      const hasUnsavedDraft = activeProgress && !activeProgress.evaluation && ((activeProgress.text && activeProgress.text.trim().length > 0) || isTimerRunning);
+      
+      if (hasUnsavedDraft) {
+        e.preventDefault();
+        e.returnValue = "Attention : Votre rédaction en cours n'a pas été évaluée et sera perdue si vous fermez l'application.";
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [selectedId, progress, isTimerRunning]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -567,7 +559,14 @@ export default function App() {
   }, [exercises]);
 
   useEffect(() => {
-    localStorage.setItem('dia_progress', JSON.stringify(progress));
+    // Only save progress to localStorage if it has an evaluation!
+    const cleanProgress: Record<string, SavedProgress> = {};
+    for (const [id, value] of Object.entries(progress)) {
+      if (value.evaluation) {
+        cleanProgress[id] = value;
+      }
+    }
+    localStorage.setItem('dia_progress', JSON.stringify(cleanProgress));
   }, [progress]);
 
   // Synchronise local custom exercises to Firestore upon login
@@ -656,7 +655,7 @@ export default function App() {
   }, [user]);
 
   const handleTextChange = useCallback((id: string, text: string) => {
-    // Only update state immediately for smooth typing
+    // Only update state in temporary/volatile memory for typing feedback
     setProgress(prev => {
       if (prev[id]?.text === text) return prev;
       return {
@@ -664,33 +663,7 @@ export default function App() {
         [id]: { ...(prev[id] || { evaluation: null }), text }
       };
     });
-
-    // Save pending text reference
-    pendingTextsRef.current[id] = text;
-
-    // Clear previous timeout for this id
-    if (saveTimeoutRef.current[id]) {
-      clearTimeout(saveTimeoutRef.current[id]);
-    }
-
-    // Save to Firestore with a debounce delay if user is logged in
-    if (user) {
-      const timeout = setTimeout(async () => {
-        try {
-          const progRef = doc(db, 'users', user.uid, 'progress', id);
-          await setDoc(progRef, {
-            exerciseId: id,
-            text,
-            updatedAt: serverTimestamp()
-          }, { merge: true });
-          delete pendingTextsRef.current[id];
-        } catch (e) {
-          console.warn("Silent save error:", e);
-        }
-      }, 1500);
-      saveTimeoutRef.current[id] = timeout;
-    }
-  }, [user]);
+  }, []);
 
   const handleEvaluate = useCallback(async (id: string, text: string) => {
     const exercise = exercises.find(e => e.id === id);
@@ -1022,9 +995,9 @@ export default function App() {
             )}
 
             <button
-              onClick={() => { setIsUploading(true); setSelectedId(null); }}
+              onClick={() => selectExercise(null, true)}
               disabled={!isOnline}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
               title={!isOnline ? "Connexion internet requise" : ""}
             >
               <Plus className="w-4 h-4" />
