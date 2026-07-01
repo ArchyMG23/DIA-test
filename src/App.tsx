@@ -9,7 +9,7 @@ import { TrainingInterface } from './components/TrainingInterface';
 import { StudentDashboard } from './components/StudentDashboard';
 import { InstallPWA } from './components/InstallPWA';
 import { extractExercises, evaluateWriting, Exercise, Evaluation } from './services/gemini';
-import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail, Users, GraduationCap, Menu, X } from 'lucide-react';
+import { Plus, CheckCircle, Clock, WifiOff, LogIn, LogOut, Cloud, User as UserIcon, Mail, Users, GraduationCap, Menu, X, Search } from 'lucide-react';
 import { auth, loginWithGoogle, logout, db, OperationType, handleFirestoreError, updateUserRole, loginWithEmail, signUpWithEmail } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy, where, deleteDoc } from 'firebase/firestore';
@@ -494,6 +494,7 @@ export default function App() {
   }, [user]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const selectExercise = async (id: string | null, forceUploadView = false) => {
     // Check if the current exercise has written text without evaluation (volatile draft)
@@ -722,6 +723,13 @@ export default function App() {
       return a.id.localeCompare(b.id);
     });
   }, [exercises]);
+
+  const filteredExercises = useMemo(() => {
+    return sortedExercises.filter(ex => 
+      ex.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      ex.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [sortedExercises, searchTerm]);
 
   const selectedExercise = sortedExercises.find(e => e.id === selectedId);
   const currentProgress = selectedId ? progress[selectedId] : null;
@@ -997,16 +1005,28 @@ export default function App() {
             <button
               onClick={() => selectExercise(null, true)}
               disabled={!isOnline}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer mb-4"
               title={!isOnline ? "Connexion internet requise" : ""}
             >
               <Plus className="w-4 h-4" />
               Ajouter un sujet
             </button>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Rechercher un sujet..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-gray-900 text-sm focus:outline-none focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] transition-colors"
+              />
+            </div>
             <InstallPWA />
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {sortedExercises.map(ex => {
+            {filteredExercises.map(ex => {
               const prog = progress[ex.id];
               const isDone = !!prog?.evaluation;
               const hasStarted = !!prog?.text;
@@ -1041,8 +1061,10 @@ export default function App() {
                 </button>
               );
             })}
-            {sortedExercises.length === 0 && (
-              <p className="text-sm text-gray-500 text-center mt-10">Aucun exercice sauvegardé.</p>
+            {filteredExercises.length === 0 && (
+              <p className="text-sm text-gray-500 text-center mt-10">
+                {sortedExercises.length === 0 ? "Aucun exercice sauvegardé." : "Aucun sujet trouvé."}
+              </p>
             )}
           </div>
         </div>
