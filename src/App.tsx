@@ -746,7 +746,7 @@ export default function App() {
   }, [selectedId, handleEvaluate]);
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans overflow-hidden">
       {/* Offline Banner */}
       {!isOnline && (
         <div className="bg-orange-500 text-white px-4 py-2 text-sm font-medium flex items-center justify-center gap-2 shrink-0">
@@ -778,7 +778,7 @@ export default function App() {
         )}
 
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative md:flex transition-transform duration-300 ease-in-out shrink-0`}>
+        <div className={`fixed inset-y-0 left-0 w-4/5 max-w-[320px] md:w-80 md:max-w-none border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50 dark:bg-gray-900 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative md:flex transition-transform duration-300 ease-in-out shrink-0`}>
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold tracking-tight text-[#FF0000]">Schreiben</h1>

@@ -30,7 +30,7 @@ export function TrainingInterface({
   const [text, setText] = useState(initialText);
   const [activeTab, setActiveTab] = useState<'topic' | 'write' | 'eval'>(evaluation ? 'eval' : 'write');
   const [isRedactionFinished, setIsRedactionFinished] = useState(false);
-  const { minutes, seconds, isActive, isWarning, isFinished, start, pause, reset } = useTimer(30);
+  const { minutes, seconds, isActive, isWarning, isFinished, start, pause, reset } = useTimer(25);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // The session counts as started if they already submitted, have written text, have an evaluation, or started manually
@@ -147,7 +147,7 @@ export function TrainingInterface({
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <h1 className="text-sm sm:text-base md:text-xl font-bold truncate max-w-[120px] sm:max-w-xs md:max-w-medium">{exercise.title}</h1>
+          <h1 className="text-sm sm:text-base md:text-xl font-bold truncate max-w-[120px] sm:max-w-xs md:max-w-md">{exercise.title}</h1>
           <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 rounded-full shrink-0">
             {exercise.type}
           </span>
@@ -346,7 +346,7 @@ export function TrainingInterface({
                     <div className="space-y-2">
                       <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Prêt à commencer l'exercice ?</h3>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-normal">
-                        Vous disposez de <strong className="text-gray-800 dark:text-gray-200">30 minutes</strong> pour rédiger votre lettre d'examen.
+                        Vous disposez de <strong className="text-gray-800 dark:text-gray-200">25 minutes</strong> pour rédiger votre lettre d'examen.
                       </p>
                     </div>
 
