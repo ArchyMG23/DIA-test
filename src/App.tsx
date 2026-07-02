@@ -756,7 +756,7 @@ export default function App() {
       )}
 
       {/* Mobile Header Banner */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
+      <div className="md:hidden relative z-30 flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shrink-0">
         <button
           onClick={() => setIsSidebarOpen(true)}
           className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -851,28 +851,29 @@ export default function App() {
               ) : (
                 <div className="space-y-3">
                   {!showEmailForm ? (
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-3">
                       <button
                         onClick={loginWithGoogle}
-                        className="w-full p-4 bg-[#FF0000] text-white rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95 flex flex-col items-center gap-2 group"
+                        className="w-full py-2 px-3 bg-[#FF0000] text-white rounded-lg hover:bg-red-600 transition-all active:scale-95 flex items-center justify-center gap-2 text-xs font-medium"
                       >
-                        <div className="flex items-center gap-2 font-bold">
-                          <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          Connexion avec Google
-                        </div>
-                        <p className="text-[10px] text-white/80 font-normal">Retrouvez votre progression partout.</p>
+                        <LogIn className="w-3 h-3" />
+                        Continuer avec Google
                       </button>
-
-                      <button
-                        onClick={() => { setShowEmailForm(true); setIsSignUp(false); }}
-                        className="w-full py-3 px-4 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-gray-750 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Mail className="w-4 h-4" />
-                        Se connecter par Email
-                      </button>
-
-                      <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl text-[10px] text-amber-600 dark:text-amber-400 leading-normal">
-                        <strong>Problème de connexion ?</strong> Si la fenêtre Google ne s'ouvre pas ou se ferme, utilisez l'option <strong>par Email</strong> ci-dessus qui fonctionne directement sans fenêtre popup !
+                      
+                      <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <button
+                          onClick={() => { setShowEmailForm(true); setIsSignUp(false); }}
+                          className="hover:text-gray-900 dark:hover:text-gray-100 hover:underline transition-colors"
+                        >
+                          Se connecter
+                        </button>
+                        <span>•</span>
+                        <button
+                          onClick={() => { setShowEmailForm(true); setIsSignUp(true); }}
+                          className="hover:text-gray-900 dark:hover:text-gray-100 hover:underline transition-colors"
+                        >
+                          Créer un compte
+                        </button>
                       </div>
                     </div>
                   ) : (

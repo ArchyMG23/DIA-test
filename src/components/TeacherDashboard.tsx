@@ -130,7 +130,25 @@ export function TeacherDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Student Text Area with Highlight editing */}
               <div className="space-y-4">
-                <label className="block text-sm font-bold uppercase tracking-wider text-gray-400">Texte de l'étudiant / Zone de correction</label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-bold uppercase tracking-wider text-gray-400">Texte de l'étudiant / Zone de correction</label>
+                  {selectedSub.status !== 'corrected' && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCorrectionData(prev => ({ ...prev, highlightedText: prev.highlightedText + '\n\n> ❌ **Erreur :** [Insérez votre correction ici]' }))}
+                        className="text-[10px] bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded border border-red-200 dark:border-red-800 hover:bg-red-100 transition-colors font-bold"
+                      >
+                        + Bloc Erreur
+                      </button>
+                      <button 
+                        onClick={() => setCorrectionData(prev => ({ ...prev, highlightedText: prev.highlightedText + '\n\n> ✨ **Suggestion :** [Insérez votre suggestion ici]' }))}
+                        className="text-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition-colors font-bold"
+                      >
+                        + Bloc Suggestion
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="relative group">
                   <textarea
                     value={correctionData.highlightedText}
