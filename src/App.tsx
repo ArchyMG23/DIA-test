@@ -611,8 +611,18 @@ export default function App() {
       }
       const extracted = await extractExercises(fileData, mimeType);
       
-      const sanitizedExtracted = extracted.map(ex => {
-        const cleanId = ex.id.replace(new RegExp("[^a-zA-Z0-9_\\-]", "g"), '_').substring(0, 100) || `ex_${Date.now()}`;
+      // Filter out duplicates within the newly extracted
+      const uniqueExtracted = extracted.filter((ex, index, self) => 
+        index === self.findIndex((t) => t.title === ex.title && t.situation === ex.situation)
+      );
+
+      // Filter against existing exercises to prevent duplicates
+      const newExercises = uniqueExtracted.filter(ex => 
+        !exercises.some(p => p.title === ex.title && p.situation === ex.situation)
+      );
+      
+      const sanitizedExtracted = newExercises.map(ex => {
+        const cleanId = `ex_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
         return {
           id: cleanId,
           title: ex.title || 'Sujet sans titre',
@@ -623,7 +633,7 @@ export default function App() {
       });
 
       // Save to global exercises if logged in
-      if (user) {
+      if (user && sanitizedExtracted.length > 0) {
         for (const ex of sanitizedExtracted) {
           const exRef = doc(db, 'exercises', ex.id);
           await setDoc(exRef, {
@@ -637,23 +647,28 @@ export default function App() {
         }
       }
 
-      setExercises(prev => {
-        const filteredPrev = prev.filter(p => !sanitizedExtracted.some(s => s.id === p.id));
-        return [...sanitizedExtracted, ...filteredPrev];
-      });
-      setIsUploading(false);
       if (sanitizedExtracted.length > 0) {
+        setExercises(prev => [...sanitizedExtracted, ...prev]);
         setSelectedId(sanitizedExtracted[0].id);
+      } else if (extracted.length > 0) {
+        // Find an existing one that matches what was extracted
+        const existing = exercises.find(p => p.title === extracted[0].title && p.situation === extracted[0].situation);
+        if (existing) {
+          setSelectedId(existing.id);
+        }
+        alert("Les sujets trouvés dans ce document existent déjà dans l'application.");
       } else {
         alert("Aucun exercice n'a été trouvé dans ce document.");
       }
+      
+      setIsUploading(false);
     } catch (error: any) {
       console.error(error);
       alert(`Erreur lors de l'extraction: ${error.message || "Erreur inconnue"}`);
     } finally {
       setIsExtracting(false);
     }
-  }, [user]);
+  }, [user, exercises]);
 
   const handleTextChange = useCallback((id: string, text: string) => {
     // Only update state in temporary/volatile memory for typing feedback
@@ -994,7 +1009,7 @@ export default function App() {
                 <div className="font-bold mb-1 flex items-center gap-1">
                   <WifiOff className="w-3 h-3" /> Clé API manquante
                 </div>
-                L'IA ne fonctionnera pas. Ajoutez <strong>GEMINI_API_KEY</strong> dans les variables d'environnement sur Render.
+                L'IA ne fonctionnera pas. Ajoutez <strong>GEMINI_API_KEY</strong> dans vos variables d'environnement.
               </div>
             ) : (
               <div className="mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-lg text-[10px] text-green-600 dark:text-green-400 flex items-center gap-2">
