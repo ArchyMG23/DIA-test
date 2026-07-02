@@ -1014,7 +1014,7 @@ export default function App() {
             ) : (
               <div className="mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-lg text-[10px] text-green-600 dark:text-green-400 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                IA Connectée (Gemini 3.1 Pro)
+                IA Connectée (Gemini 3.5 Flash)
               </div>
             )}
 

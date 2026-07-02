@@ -48,7 +48,7 @@ export async function extractExercises(fileData: string, mimeType: string): Prom
   `;
 
   const response = await getAiClient().models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-3.5-flash',
     contents: {
       parts: [
         {
@@ -119,7 +119,7 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
 
   try {
     const response = await getAiClient().models.generateContent({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3.5-flash',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         responseMimeType: 'application/json',
