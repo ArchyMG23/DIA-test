@@ -449,6 +449,18 @@ export function TrainingInterface({
                      <FeedbackCard title="Structure de la lettre" content={evaluation.structure} score={evaluation.structureScore} maxScore={25} />
                      <FeedbackCard title="Connecteurs Logiques" content={evaluation.connectors} score={evaluation.connectorsScore} maxScore={25} />
                    </div>
+                   
+                   {evaluation.correctedText && (
+                     <div className="mt-8">
+                       <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                         <Award className="w-5 h-5" /> 
+                         Proposition de correction idéale (Niveau B2)
+                       </h3>
+                       <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-6 prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
+                         <Markdown>{evaluation.correctedText}</Markdown>
+                       </div>
+                     </div>
+                   )}
                 </div>
               )}
             </div>

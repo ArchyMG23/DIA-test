@@ -32,6 +32,7 @@ export interface Evaluation {
   connectors: string;
   connectorsScore: number;
   overallFeedback: string;
+  correctedText: string;
 }
 
 export async function extractExercises(fileData: string, mimeType: string): Promise<Exercise[]> {
@@ -89,7 +90,7 @@ export async function extractExercises(fileData: string, mimeType: string): Prom
 
 export async function evaluateWriting(exercise: Exercise, userText: string): Promise<Evaluation> {
   const prompt = `
-    Tu es un examinateur officiel du test d'allemand Telc B2.
+    Tu es un examinateur OFFICIEL et TRÈS STRICT du test d'allemand Telc B2. Ton rôle est de corriger la rédaction avec l'exigence réelle de l'examen. Ne sois pas indulgent. S'il y a des fautes basiques de niveau A1/A2, pénalise sévèrement.
     Évalue la rédaction suivante en fonction de la situation et de la consigne données.
     
     Situation / Offre :
@@ -107,12 +108,13 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
     ${userText}
     """
     
-    Fournis une évaluation détaillée et constructive en français, structurée selon les critères du Telc B2 :
-    1. Grammaire (Grammatik): Précision et complexité (B2 attend une bonne maîtrise des structures complexes). Score /25.
-    2. Vocabulaire (Wortschatz): Variété et adéquation au thème (B2 attend un lexique riche et des expressions idiomatiques). Score /25.
-    3. Structure de la lettre (Aufbau): Respect des codes de la lettre (date, objet, salutations, conclusion). Score /25.
+    Fournis une évaluation détaillée, SÉVÈRE et constructive en français, structurée selon les critères du Telc B2 :
+    1. Grammaire (Grammatik): Précision et complexité. (B2 attend une bonne maîtrise des structures complexes). Score /25.
+    2. Vocabulaire (Wortschatz): Variété et adéquation au thème. Score /25.
+    3. Structure de la lettre (Aufbau): Respect strict des codes de la lettre formelle (date, objet, salutations, conclusion). Score /25.
     4. Connecteurs logiques (Verknüpfungsmittel): Fluidité et cohérence de l'argumentation. Score /25.
     5. Feedback global et note finale sur 100.
+    6. Fournis UNE VERSION ENTIÈREMENT CORRIGÉE de la rédaction. Cette version doit être parfaite, de niveau B2, respectant toutes les exigences formelles de la consigne.
 
     IMPORTANT: Retourne UNIQUEMENT un objet JSON valide correspondant au schéma demandé.
   `;
@@ -126,7 +128,7 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            score: { type: Type.NUMBER, description: "Note globale sur 100" },
+            score: { type: Type.NUMBER, description: "Note globale sur 100 (très stricte)" },
             grammar: { type: Type.STRING, description: "Feedback détaillé grammaire" },
             grammarScore: { type: Type.NUMBER, description: "Note grammaire /25" },
             vocabulary: { type: Type.STRING, description: "Feedback détaillé vocabulaire" },
@@ -136,10 +138,11 @@ export async function evaluateWriting(exercise: Exercise, userText: string): Pro
             connectors: { type: Type.STRING, description: "Feedback détaillé connecteurs" },
             connectorsScore: { type: Type.NUMBER, description: "Note connecteurs /25" },
             overallFeedback: { type: Type.STRING, description: "Synthèse globale" },
+            correctedText: { type: Type.STRING, description: "Le texte entièrement corrigé et amélioré au niveau B2" },
           },
           required: [
             "score", "grammar", "grammarScore", "vocabulary", "vocabularyScore", 
-            "structure", "structureScore", "connectors", "connectorsScore", "overallFeedback"
+            "structure", "structureScore", "connectors", "connectorsScore", "overallFeedback", "correctedText"
           ],
         },
       },
